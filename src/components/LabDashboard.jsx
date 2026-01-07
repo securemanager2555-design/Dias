@@ -3,12 +3,9 @@ import { motion } from 'framer-motion';
 import { ModuleCard } from './ModuleCard';
 import { owaspModules } from '../data/owaspModules';
 import { BeakerIcon, SparklesIcon, ZapIcon } from 'lucide-react';
-type LabDashboardProps = {
-  onModuleSelect: (moduleId: string) => void;
-};
 export function LabDashboard({
   onModuleSelect
-}: LabDashboardProps) {
+}) {
   return <div className="min-h-screen w-full">
       {/* Animated background */}
       <div className="fixed inset-0 animated-bg" />

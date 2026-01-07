@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import type { OwaspModule } from '../data/owaspModules';
 import { ShieldCheckIcon } from 'lucide-react';
-type ModuleCardProps = {
-  module: OwaspModule;
-  index: number;
-  onClick: () => void;
-};
 export function ModuleCard({
   module,
   index,
   onClick
-}: ModuleCardProps) {
+}) {
   const [isHovered, setIsHovered] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -25,7 +19,7 @@ export function ModuleCard({
   });
   const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['10deg', '-10deg']);
   const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-10deg', '10deg']);
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;

@@ -3,16 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UserIcon, ShieldIcon, TrophyIcon, FlameIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon } from 'lucide-react';
 import { AchievementBadge } from './AchievementBadge';
 import { achievements, owaspModules, userProgress } from '../data/owaspModules';
-type Role = 'admin' | 'user';
-type SidePanelProps = {
-  isOpen: boolean;
-  onToggle: () => void;
-};
 export function SidePanel({
   isOpen,
   onToggle
-}: SidePanelProps) {
-  const [role, setRole] = useState<Role>('user');
+}) {
+  const [role, setRole] = useState('user');
   const [isFlipping, setIsFlipping] = useState(false);
   const completedModules = owaspModules.filter(m => m.isCompleted).length;
   const totalProgress = Math.round(owaspModules.reduce((acc, m) => acc + m.completionPercentage, 0) / owaspModules.length);
