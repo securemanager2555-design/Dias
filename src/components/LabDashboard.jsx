@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ModuleCard } from './ModuleCard';
 import { owaspModules } from '../data/owaspModules';
 import { BeakerIcon, SparklesIcon, ZapIcon } from 'lucide-react';
-type LabDashboardProps = {
-  onModuleSelect: (moduleId: string) => void;
-};
 export function LabDashboard({
   onModuleSelect
-}: LabDashboardProps) {
+}) {
+  const [activeStage, setActiveStage] = useState('Все');
+  const lifecycleStages = useMemo(() => {
+    const stages = Array.from(new Set(owaspModules.map(module => module.lifecycleStage)));
+    return ['Все', ...stages];
+  }, []);
+  const filteredModules = activeStage === 'Все' ? owaspModules : owaspModules.filter(module => module.lifecycleStage === activeStage);
   return <div className="min-h-screen w-full">
       {/* Animated background */}
       <div className="fixed inset-0 animated-bg" />
@@ -32,7 +35,7 @@ export function LabDashboard({
       </div>
 
       {/* Content */}
-      <div className="relative z-10 px-4 py-8 lg:px-8 lg:py-12 lg:pr-24">
+      <div className="relative z-10 px-4 py-8 lg:px-8 lg:py-12 lg:pr-96">
         {/* Header */}
         <motion.header className="max-w-7xl mx-auto mb-12" initial={{
         opacity: 0,
@@ -54,10 +57,10 @@ export function LabDashboard({
             </motion.div>
             <div>
               <h1 className="text-3xl lg:text-4xl font-bold">
-                <span className="gradient-text">Security Lab</span>
+                <span className="gradient-text">Secure by Design</span>
               </h1>
               <p className="text-slate-400 text-sm">
-                OWASP Top 10 Interactive Training
+                OWASP Top 10 Defense Handbook
               </p>
             </div>
           </div>
@@ -69,9 +72,9 @@ export function LabDashboard({
         }} transition={{
           delay: 0.3
         }}>
-            Master web security through hands-on exploration. Each module covers
-            a critical vulnerability with live examples, interactive sandboxes,
-            and defense strategies.
+            Этот справочник показывает, какие части сайта защищены от атак
+            OWASP Top 10, какими методами мы это сделали и какой код отвечает
+            за защиту.
           </motion.p>
 
           {/* Quick stats */}
@@ -86,22 +89,34 @@ export function LabDashboard({
         }}>
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass">
               <SparklesIcon className="w-4 h-4 text-purple-400" />
-              <span className="text-sm text-slate-300">10 Modules</span>
+              <span className="text-sm text-slate-300">10 категорий защиты</span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass">
               <ZapIcon className="w-4 h-4 text-cyan-400" />
               <span className="text-sm text-slate-300">
-                Interactive Sandboxes
+                Демонстрация уязвимостей
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass">
               <BeakerIcon className="w-4 h-4 text-pink-400" />
               <span className="text-sm text-slate-300">
-                Live Visualizations
+                Защитные паттерны кода
               </span>
             </div>
           </motion.div>
         </motion.header>
+
+        {/* Filters */}
+        <div className="max-w-7xl mx-auto mb-8">
+          <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+            Этап Secure by Design
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {lifecycleStages.map(stage => <button key={stage} onClick={() => setActiveStage(stage)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${activeStage === stage ? 'bg-purple-500/20 text-purple-200 border border-purple-500/40' : 'bg-slate-900/60 text-slate-400 border border-slate-700/60 hover:text-slate-200'}`}>
+                {stage}
+              </button>)}
+          </div>
+        </div>
 
         {/* Lab Table - Module Grid */}
         <motion.section className="max-w-7xl mx-auto" initial={{
@@ -114,12 +129,12 @@ export function LabDashboard({
           <div className="flex items-center gap-2 mb-6">
             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
-              Laboratory Modules
+              Карта защиты приложения
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
-            {owaspModules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} onClick={() => onModuleSelect(module.id)} />)}
+            {filteredModules.map((module, index) => <ModuleCard key={module.id} module={module} index={index} onClick={() => onModuleSelect(module.id)} />)}
           </div>
         </motion.section>
 
@@ -132,8 +147,8 @@ export function LabDashboard({
         delay: 1
       }}>
           <p className="text-sm text-slate-500">
-            Click any module to explore vulnerabilities, test in sandbox, and
-            learn defense strategies
+            Выберите модуль, чтобы увидеть применённые защиты и связанные
+            фрагменты кода
           </p>
         </motion.footer>
       </div>
