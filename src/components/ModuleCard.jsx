@@ -96,20 +96,13 @@ export function ModuleCard({
               delay: 0.2
             }}>
                   <ShieldCheckIcon className="w-4 h-4 text-green-400" />
-                </motion.div> : <div className="text-right">
-                  <div className="text-xs text-slate-500 mb-1">Progress</div>
-                  <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <motion.div className="h-full rounded-full" style={{
-                  backgroundColor: module.color
-                }} initial={{
-                  width: 0
-                }} animate={{
-                  width: `${module.completionPercentage}%`
-                }} transition={{
-                  duration: 1,
-                  delay: index * 0.1
-                }} />
-                  </div>
+                </motion.div> : <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{
+              backgroundColor: `${module.color}20`,
+              border: `1px solid ${module.color}40`
+            }}>
+                  <Icon className="w-4 h-4" style={{
+                color: module.color
+              }} />
                 </div>}
             </div>
 
@@ -121,9 +114,14 @@ export function ModuleCard({
               <p className="text-sm text-slate-400 line-clamp-2">
                 {module.tagline}
               </p>
+              <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                <span className="px-2 py-1 rounded-full bg-slate-800/60 text-slate-300 border border-slate-700/60">
+                  {module.lifecycleStage}
+                </span>
+              </div>
             </div>
 
-            {/* Hover details */}
+            {/* Secure by Design tags */}
             <motion.div className="mt-4 pt-4 border-t border-slate-700/50" initial={{
             opacity: 0,
             height: 0
@@ -133,15 +131,23 @@ export function ModuleCard({
           }} transition={{
             duration: 0.2
           }}>
-              <div className="flex items-center justify-between text-xs">
+              <div className="text-xs text-slate-500 mb-2">
+                Secure by Design
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {module.secureByDesign.map(item => <span key={item} className="px-2 py-1 rounded-full bg-slate-800/60 text-slate-300 border border-slate-700/60">
+                    {item}
+                  </span>)}
+              </div>
+              <div className="flex items-center justify-between text-xs mt-3">
                 <span className="px-2 py-1 rounded-full" style={{
                 backgroundColor: `${module.color}20`,
                 color: module.color
               }}>
-                  {module.difficulty}
+                  {module.difficulty === 'Easy' ? 'Лёгкий' : module.difficulty === 'Medium' ? 'Средний' : 'Сложный'}
                 </span>
                 <span className={`px-2 py-1 rounded-full ${module.riskLevel === 'Critical' ? 'bg-red-500/20 text-red-400' : module.riskLevel === 'High' ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                  {module.riskLevel} Risk
+                  {module.riskLevel} риск
                 </span>
               </div>
             </motion.div>

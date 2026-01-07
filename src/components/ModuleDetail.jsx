@@ -1,34 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XIcon, BookOpenIcon, CodeIcon, PlayIcon, ShieldIcon, ActivityIcon, AlertTriangleIcon, CheckIcon, CopyIcon } from 'lucide-react';
-import { AttackVisualization } from './AttackVisualization';
-import { SecurityDiagram } from './SecurityDiagram';
-const tabs = [{
-  id: 'overview',
-  label: 'Overview',
-  icon: BookOpenIcon
-}, {
-  id: 'example',
-  label: 'Live Example',
-  icon: CodeIcon
-}, {
-  id: 'sandbox',
-  label: 'Sandbox',
-  icon: PlayIcon
-}, {
-  id: 'defense',
-  label: 'Defense',
-  icon: ShieldIcon
-}, {
-  id: 'visualization',
-  label: 'Visualization',
-  icon: ActivityIcon
-}];
+import { XIcon, BookOpenIcon, CodeIcon } from 'lucide-react';
+import { HandbookSection } from './HandbookSection';
+import { ImplementationSection } from './ImplementationSection';
 export function ModuleDetail({
   module,
   onClose
 }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [viewMode, setViewMode] = useState('handbook');
   const [copied, setCopied] = useState(null);
   const [sandboxInput, setSandboxInput] = useState('');
   const [sandboxOutput, setSandboxOutput] = useState(null);
@@ -117,26 +96,34 @@ export function ModuleDetail({
                   {module.difficulty}
                 </span>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${module.riskLevel === 'Critical' ? 'bg-red-500/20 text-red-400' : module.riskLevel === 'High' ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                  {module.riskLevel} Risk
+                  {module.riskLevel} риск
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800/70 text-slate-300">
+                  {module.lifecycleStage}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* View switch */}
         <div className="flex border-b border-slate-700/50 overflow-x-auto">
-          {tabs.map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`relative flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab.id ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-              {activeTab === tab.id && <motion.div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500" layoutId="activeTab" />}
-            </button>)}
+          <button onClick={() => setViewMode('handbook')} className={`relative flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === 'handbook' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+            <BookOpenIcon className="w-4 h-4" />
+            Справочник
+            {viewMode === 'handbook' && <motion.div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500" layoutId="activeView" />}
+          </button>
+          <button onClick={() => setViewMode('implementation')} className={`relative flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors whitespace-nowrap ${viewMode === 'implementation' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+            <CodeIcon className="w-4 h-4" />
+            Реализация
+            {viewMode === 'implementation' && <motion.div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500" layoutId="activeView" />}
+          </button>
         </div>
 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           <AnimatePresence mode="wait">
-            <motion.div key={activeTab} initial={{
+            <motion.div key={viewMode} initial={{
             opacity: 0,
             x: 20
           }} animate={{
@@ -148,180 +135,7 @@ export function ModuleDetail({
           }} transition={{
             duration: 0.2
           }}>
-              {activeTab === 'overview' && <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-3">
-                      Description
-                    </h3>
-                    <p className="text-slate-300 leading-relaxed">
-                      {module.description}
-                    </p>
-                  </div>
-
-                  <div className="glass rounded-xl p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangleIcon className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-semibold text-white">
-                          Real-World Impact
-                        </h4>
-                        <p className="text-sm text-slate-400 mt-1">
-                          {module.realWorldImpact}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-3">
-                      Attack Flow
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {module.attackFlow.map((step, i) => <motion.div key={i} className="flex items-center gap-2" initial={{
-                    opacity: 0,
-                    y: 10
-                  }} animate={{
-                    opacity: 1,
-                    y: 0
-                  }} transition={{
-                    delay: i * 0.1
-                  }}>
-                          <span className="px-3 py-2 rounded-lg glass text-sm text-slate-300">
-                            {i + 1}. {step}
-                          </span>
-                          {i < module.attackFlow.length - 1 && <span className="text-slate-600">→</span>}
-                        </motion.div>)}
-                    </div>
-                  </div>
-                </div>}
-
-              {activeTab === 'example' && <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* Vulnerable code */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-red-400 flex items-center gap-2">
-                          <XIcon className="w-4 h-4" /> Vulnerable Code
-                        </h4>
-                        <button onClick={() => handleCopy(module.examples.vulnerable, 'vulnerable')} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
-                          {copied === 'vulnerable' ? <CheckIcon className="w-3 h-3" /> : <CopyIcon className="w-3 h-3" />}
-                          {copied === 'vulnerable' ? 'Copied!' : 'Copy'}
-                        </button>
-                      </div>
-                      <pre className="code-block p-4 overflow-x-auto text-red-300/80">
-                        <code>{module.examples.vulnerable}</code>
-                      </pre>
-                    </div>
-
-                    {/* Secure code */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-sm font-semibold text-green-400 flex items-center gap-2">
-                          <CheckIcon className="w-4 h-4" /> Secure Code
-                        </h4>
-                        <button onClick={() => handleCopy(module.examples.secure, 'secure')} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
-                          {copied === 'secure' ? <CheckIcon className="w-3 h-3" /> : <CopyIcon className="w-3 h-3" />}
-                          {copied === 'secure' ? 'Copied!' : 'Copy'}
-                        </button>
-                      </div>
-                      <pre className="code-block p-4 overflow-x-auto text-green-300/80">
-                        <code>{module.examples.secure}</code>
-                      </pre>
-                    </div>
-                  </div>
-
-                  <div className="glass rounded-xl p-4">
-                    <h4 className="font-semibold text-white mb-2">
-                      Explanation
-                    </h4>
-                    <p className="text-sm text-slate-300">
-                      {module.examples.explanation}
-                    </p>
-                  </div>
-                </div>}
-
-              {activeTab === 'sandbox' && <div className="space-y-6">
-                  <div className="glass rounded-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">
-                      Test Input Validation
-                    </h3>
-                    <p className="text-sm text-slate-400 mb-4">
-                      Enter potentially malicious input to see how it would be
-                      detected. Try SQL injection patterns like{' '}
-                      <code className="text-purple-400">' OR 1=1 --</code> or
-                      XSS like{' '}
-                      <code className="text-purple-400">&lt;script&gt;</code>
-                    </p>
-
-                    <div className="flex gap-3">
-                      <input type="text" value={sandboxInput} onChange={e => setSandboxInput(e.target.value)} placeholder="Enter test input..." className="flex-1 px-4 py-3 rounded-xl bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors font-mono" />
-                      <motion.button onClick={handleSandboxTest} className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium" whileHover={{
-                    scale: 1.02
-                  }} whileTap={{
-                    scale: 0.98
-                  }}>
-                        Test
-                      </motion.button>
-                    </div>
-
-                    {sandboxOutput && <motion.div className={`mt-4 p-4 rounded-xl ${sandboxOutput.includes('⚠️') ? 'bg-red-500/10 border border-red-500/30' : sandboxOutput.includes('✅') ? 'bg-green-500/10 border border-green-500/30' : 'bg-slate-800/50 border border-slate-700'}`} initial={{
-                  opacity: 0,
-                  y: 10
-                }} animate={{
-                  opacity: 1,
-                  y: 0
-                }}>
-                        <p className="text-sm">{sandboxOutput}</p>
-                      </motion.div>}
-                  </div>
-
-                  <div className="glass rounded-xl p-4">
-                    <p className="text-xs text-slate-500 text-center">
-                      ⚠️ This is a simulated sandbox for educational purposes
-                      only. No actual attacks are performed.
-                    </p>
-                  </div>
-                </div>}
-
-              {activeTab === 'defense' && <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-white">
-                    Mitigation Strategies
-                  </h3>
-                  <div className="space-y-3">
-                    {module.defenses.map((defense, i) => <motion.div key={i} className="flex items-start gap-3 p-4 rounded-xl glass" initial={{
-                  opacity: 0,
-                  x: -20
-                }} animate={{
-                  opacity: 1,
-                  x: 0
-                }} transition={{
-                  delay: i * 0.1
-                }}>
-                        <div className="w-8 h-8 rounded-lg bg-green-500/20 border border-green-500/50 flex items-center justify-center flex-shrink-0">
-                          <span className="text-green-400 font-bold text-sm">
-                            {i + 1}
-                          </span>
-                        </div>
-                        <p className="text-slate-300">{defense}</p>
-                      </motion.div>)}
-                  </div>
-                </div>}
-
-              {activeTab === 'visualization' && <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">
-                      Attack Animation
-                    </h3>
-                    <AttackVisualization moduleId={module.id} />
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">
-                      Security Architecture
-                    </h3>
-                    <SecurityDiagram />
-                  </div>
-                </div>}
+              {viewMode === 'handbook' ? <HandbookSection module={module} /> : <ImplementationSection module={module} copied={copied} handleCopy={handleCopy} sandboxInput={sandboxInput} setSandboxInput={setSandboxInput} sandboxOutput={sandboxOutput} handleSandboxTest={handleSandboxTest} />}
             </motion.div>
           </AnimatePresence>
         </div>

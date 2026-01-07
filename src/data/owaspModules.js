@@ -4,13 +4,14 @@ export const owaspModules = [{
   name: 'Broken Access Control',
   shortName: 'Access Control',
   description: 'Access control enforces policy such that users cannot act outside of their intended permissions. Failures typically lead to unauthorized information disclosure, modification, or destruction of data.',
-  tagline: "When users can do what they shouldn't",
+  tagline: 'Когда пользователи получают лишние права',
   icon: ShieldX,
   color: '#EF4444',
   bgColor: 'rgba(239, 68, 68, 0.1)',
   difficulty: 'Medium',
   riskLevel: 'Critical',
   completionPercentage: 75,
+  secureByDesign: ['Design', 'Prevent', 'Detect'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: Direct object reference
@@ -30,19 +31,42 @@ app.get('/api/user/:id', authorize, (req, res) => {
   },
   defenses: ['Implement proper access control checks on every request', 'Deny by default - require explicit grants', 'Use role-based access control (RBAC)', 'Log access control failures and alert admins', 'Rate limit API access to minimize automated attacks'],
   realWorldImpact: 'In 2019, a major bank exposed 100M customer records due to misconfigured access controls on their cloud storage.',
-  attackFlow: ['Attacker identifies endpoint', 'Modifies user ID parameter', 'Bypasses authorization', 'Accesses unauthorized data']
+  attackFlow: ['Attacker identifies endpoint', 'Modifies user ID parameter', 'Bypasses authorization', 'Accesses unauthorized data'],
+  lifecycleStage: 'Design',
+  attack: {
+    description: 'Access control enforces policy such that users cannot act outside of their intended permissions. Failures typically lead to unauthorized information disclosure, modification, or destruction of data.',
+    flow: ['Attacker identifies endpoint', 'Modifies user ID parameter', 'Bypasses authorization', 'Accesses unauthorized data'],
+    impact: 'In 2019, a major bank exposed 100M customer records due to misconfigured access controls on their cloud storage.'
+  },
+  defense: {
+    strategies: ['Implement proper access control checks on every request', 'Deny by default - require explicit grants', 'Use role-based access control (RBAC)', 'Log access control failures and alert admins', 'Rate limit API access to minimize automated attacks']
+  },
+  controlIds: ['rbac', 'rate-limit', 'secure-logging'],
+  codeLinks: [{
+    title: 'Authorization middleware',
+    file: 'src/security/authorize.js',
+    snippet: `// Secure: Proper authorization
+app.get('/api/user/:id', authorize, (req, res) => {
+  if (req.user.id !== req.params.id && !req.user.isAdmin) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  const user = db.findUser(req.params.id);
+  res.json(user);
+});`
+  }]
 }, {
   id: 'a02',
   name: 'Cryptographic Failures',
   shortName: 'Crypto Failures',
   description: 'Previously known as Sensitive Data Exposure, this focuses on failures related to cryptography which often leads to sensitive data exposure or system compromise.',
-  tagline: "When secrets aren't kept secret",
+  tagline: 'Когда секреты не остаются секретами',
   icon: LockKeyhole,
   color: '#F97316',
   bgColor: 'rgba(249, 115, 22, 0.1)',
   difficulty: 'Hard',
   riskLevel: 'Critical',
   completionPercentage: 30,
+  secureByDesign: ['Design', 'Prevent', 'Recover'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: Weak hashing
@@ -56,19 +80,38 @@ db.saveUser({ email, passwordHash });`,
   },
   defenses: ['Use strong, up-to-date encryption algorithms (AES-256, RSA-2048+)', 'Hash passwords with bcrypt, scrypt, or Argon2', 'Encrypt sensitive data at rest and in transit', 'Properly manage cryptographic keys', 'Disable caching for sensitive data responses'],
   realWorldImpact: 'The 2013 Adobe breach exposed 153M user records with weak encryption, leading to mass password cracking.',
-  attackFlow: ['Attacker intercepts data', 'Identifies weak encryption', 'Cracks or decrypts data', 'Exposes sensitive information']
+  attackFlow: ['Attacker intercepts data', 'Identifies weak encryption', 'Cracks or decrypts data', 'Exposes sensitive information'],
+  lifecycleStage: 'Build',
+  attack: {
+    description: 'Previously known as Sensitive Data Exposure, this focuses on failures related to cryptography which often leads to sensitive data exposure or system compromise.',
+    flow: ['Attacker intercepts data', 'Identifies weak encryption', 'Cracks or decrypts data', 'Exposes sensitive information'],
+    impact: 'The 2013 Adobe breach exposed 153M user records with weak encryption, leading to mass password cracking.'
+  },
+  defense: {
+    strategies: ['Use strong, up-to-date encryption algorithms (AES-256, RSA-2048+)', 'Hash passwords with bcrypt, scrypt, or Argon2', 'Encrypt sensitive data at rest and in transit', 'Properly manage cryptographic keys', 'Disable caching for sensitive data responses']
+  },
+  controlIds: ['crypto', 'secure-logging'],
+  codeLinks: [{
+    title: 'Password hashing',
+    file: 'src/security/passwords.js',
+    snippet: `// Secure: Strong hashing with salt
+const saltRounds = 12;
+const passwordHash = await bcrypt.hash(password, saltRounds);
+db.saveUser({ email, passwordHash });`
+  }]
 }, {
   id: 'a03',
   name: 'Injection',
   shortName: 'Injection',
   description: 'Injection flaws occur when untrusted data is sent to an interpreter as part of a command or query. SQL, NoSQL, OS, and LDAP injection are common attack vectors.',
-  tagline: 'When input becomes code',
+  tagline: 'Когда ввод становится кодом',
   icon: Code2,
   color: '#EAB308',
   bgColor: 'rgba(234, 179, 8, 0.1)',
   difficulty: 'Medium',
   riskLevel: 'Critical',
   completionPercentage: 100,
+  secureByDesign: ['Design', 'Prevent', 'Detect'],
   isCompleted: true,
   examples: {
     vulnerable: `// Vulnerable: SQL Injection
@@ -83,19 +126,37 @@ db.execute(query, [email, hashedPassword]);`,
   },
   defenses: ['Use parameterized queries / prepared statements', 'Validate and sanitize all user inputs', 'Use ORM frameworks that handle escaping', 'Apply least privilege to database accounts', 'Implement Web Application Firewall (WAF)'],
   realWorldImpact: 'SQL injection has been responsible for countless breaches, including the 2017 Equifax breach affecting 147M people.',
-  attackFlow: ['Attacker crafts malicious input', 'Input interpreted as code', 'Database executes attack', 'Data exfiltrated or modified']
+  attackFlow: ['Attacker crafts malicious input', 'Input interpreted as code', 'Database executes attack', 'Data exfiltrated or modified'],
+  lifecycleStage: 'Build',
+  attack: {
+    description: 'Injection flaws occur when untrusted data is sent to an interpreter as part of a command or query. SQL, NoSQL, OS, and LDAP injection are common attack vectors.',
+    flow: ['Attacker crafts malicious input', 'Input interpreted as code', 'Database executes attack', 'Data exfiltrated or modified'],
+    impact: 'SQL injection has been responsible for countless breaches, including the 2017 Equifax breach affecting 147M people.'
+  },
+  defense: {
+    strategies: ['Use parameterized queries / prepared statements', 'Validate and sanitize all user inputs', 'Use ORM frameworks that handle escaping', 'Apply least privilege to database accounts', 'Implement Web Application Firewall (WAF)']
+  },
+  controlIds: ['input-validation', 'secure-logging'],
+  codeLinks: [{
+    title: 'Parameterized query',
+    file: 'src/db/queries.js',
+    snippet: `// Secure: Parameterized query
+const query = 'SELECT * FROM users WHERE email = ? AND password = ?';
+db.execute(query, [email, hashedPassword]);`
+  }]
 }, {
   id: 'a04',
   name: 'Insecure Design',
   shortName: 'Insecure Design',
   description: 'A new category focusing on risks related to design flaws. Insecure design cannot be fixed by a perfect implementation - security must be built in from the start.',
-  tagline: 'When security is an afterthought',
+  tagline: 'Когда безопасность появляется слишком поздно',
   icon: FileWarning,
   color: '#F59E0B',
   bgColor: 'rgba(245, 158, 11, 0.1)',
   difficulty: 'Hard',
   riskLevel: 'High',
   completionPercentage: 45,
+  secureByDesign: ['Design', 'Prevent'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: No rate limiting on password reset
@@ -117,19 +178,43 @@ app.post('/reset-password',
   },
   defenses: ['Integrate security into the SDLC from the start', 'Use threat modeling during design phase', 'Implement defense in depth', 'Design for failure - assume breaches will happen', 'Regular security architecture reviews'],
   realWorldImpact: 'Many breaches stem from fundamental design flaws that no amount of patching can fix.',
-  attackFlow: ['Attacker analyzes system design', 'Identifies architectural weakness', 'Exploits design flaw', 'Achieves unauthorized access']
+  attackFlow: ['Attacker analyzes system design', 'Identifies architectural weakness', 'Exploits design flaw', 'Achieves unauthorized access'],
+  lifecycleStage: 'Design',
+  attack: {
+    description: 'A new category focusing on risks related to design flaws. Insecure design cannot be fixed by a perfect implementation - security must be built in from the start.',
+    flow: ['Attacker analyzes system design', 'Identifies architectural weakness', 'Exploits design flaw', 'Achieves unauthorized access'],
+    impact: 'Many breaches stem from fundamental design flaws that no amount of patching can fix.'
+  },
+  defense: {
+    strategies: ['Integrate security into the SDLC from the start', 'Use threat modeling during design phase', 'Implement defense in depth', 'Design for failure - assume breaches will happen', 'Regular security architecture reviews']
+  },
+  controlIds: ['rate-limit', 'secure-config'],
+  codeLinks: [{
+    title: 'Rate limiting + CAPTCHA',
+    file: 'src/security/rate-limit.js',
+    snippet: `// Secure: Rate limiting + CAPTCHA
+app.post('/reset-password', 
+  rateLimiter({ max: 3, window: '1h' }),
+  verifyCaptcha,
+  async (req, res) => {
+    const token = generateSecureToken();
+    await sendResetEmail(req.body.email, token);
+    res.json({ success: true });
+});`
+  }]
 }, {
   id: 'a05',
   name: 'Security Misconfiguration',
   shortName: 'Misconfiguration',
   description: 'Security misconfiguration is the most common issue. This includes insecure default configurations, incomplete configurations, and verbose error messages.',
-  tagline: "When defaults aren't secure",
+  tagline: 'Когда настройки остаются небезопасными',
   icon: SlidersHorizontal,
   color: '#A855F7',
   bgColor: 'rgba(168, 85, 247, 0.1)',
   difficulty: 'Easy',
   riskLevel: 'High',
   completionPercentage: 60,
+  secureByDesign: ['Prevent', 'Detect'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: Debug mode in production
@@ -153,19 +238,43 @@ app.use('/admin', authenticate, authorize('admin'), adminRoutes);`,
   },
   defenses: ['Implement hardened, repeatable deployment processes', 'Remove unused features and frameworks', 'Review and update configurations regularly', 'Use security headers (CSP, HSTS, X-Frame-Options)', 'Automated configuration scanning'],
   realWorldImpact: 'The 2019 Capital One breach was caused by a misconfigured WAF, exposing 100M customer records.',
-  attackFlow: ['Attacker scans for misconfigurations', 'Finds exposed service/debug info', 'Exploits weak settings', 'Gains system access']
+  attackFlow: ['Attacker scans for misconfigurations', 'Finds exposed service/debug info', 'Exploits weak settings', 'Gains system access'],
+  lifecycleStage: 'Build',
+  attack: {
+    description: 'Security misconfiguration is the most common issue. This includes insecure default configurations, incomplete configurations, and verbose error messages.',
+    flow: ['Attacker scans for misconfigurations', 'Finds exposed service/debug info', 'Exploits weak settings', 'Gains system access'],
+    impact: 'The 2019 Capital One breach was caused by a misconfigured WAF, exposing 100M customer records.'
+  },
+  defense: {
+    strategies: ['Implement hardened, repeatable deployment processes', 'Remove unused features and frameworks', 'Review and update configurations regularly', 'Use security headers (CSP, HSTS, X-Frame-Options)', 'Automated configuration scanning']
+  },
+  controlIds: ['secure-config', 'secure-logging'],
+  codeLinks: [{
+    title: 'Production configuration',
+    file: 'src/config/security.js',
+    snippet: `// Secure: Production configuration
+app.use(errorHandler({ 
+  showStack: false,
+  showMessage: false,
+  log: errorLogger 
+}));
+
+// Protected admin panel
+app.use('/admin', authenticate, authorize('admin'), adminRoutes);`
+  }]
 }, {
   id: 'a06',
   name: 'Vulnerable Components',
   shortName: 'Vulnerable Deps',
   description: 'Components such as libraries, frameworks, and software modules run with the same privileges as the application. Vulnerable components can undermine application security.',
-  tagline: 'When dependencies become liabilities',
+  tagline: 'Когда зависимости становятся риском',
   icon: Package,
   color: '#3B82F6',
   bgColor: 'rgba(59, 130, 246, 0.1)',
   difficulty: 'Easy',
   riskLevel: 'High',
   completionPercentage: 85,
+  secureByDesign: ['Prevent', 'Detect', 'Recover'],
   isCompleted: false,
   examples: {
     vulnerable: `// package.json with vulnerable deps
@@ -191,19 +300,45 @@ app.use('/admin', authenticate, authorize('admin'), adminRoutes);`,
   },
   defenses: ['Maintain an inventory of all components and versions', 'Continuously monitor for vulnerabilities (Snyk, Dependabot)', 'Only use components from trusted sources', 'Remove unused dependencies', 'Subscribe to security bulletins for your stack'],
   realWorldImpact: 'The Log4Shell vulnerability (2021) affected millions of applications using the Log4j library.',
-  attackFlow: ['Attacker identifies vulnerable library', 'Finds known exploit (CVE)', 'Crafts attack payload', 'Compromises application']
+  attackFlow: ['Attacker identifies vulnerable library', 'Finds known exploit (CVE)', 'Crafts attack payload', 'Compromises application'],
+  lifecycleStage: 'Monitor',
+  attack: {
+    description: 'Components such as libraries, frameworks, and software modules run with the same privileges as the application. Vulnerable components can undermine application security.',
+    flow: ['Attacker identifies vulnerable library', 'Finds known exploit (CVE)', 'Crafts attack payload', 'Compromises application'],
+    impact: 'The Log4Shell vulnerability (2021) affected millions of applications using the Log4j library.'
+  },
+  defense: {
+    strategies: ['Maintain an inventory of all components and versions', 'Continuously monitor for vulnerabilities (Snyk, Dependabot)', 'Only use components from trusted sources', 'Remove unused dependencies', 'Subscribe to security bulletins for your stack']
+  },
+  controlIds: ['dependency-monitoring'],
+  codeLinks: [{
+    title: 'Dependency audit',
+    file: 'package.json',
+    snippet: `// Updated and monitored dependencies
+{
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "axios": "^1.6.0",
+    "express": "^4.18.2"
+  },
+  "scripts": {
+    "audit": "npm audit --production"
+  }
+}`
+  }]
 }, {
   id: 'a07',
   name: 'Authentication Failures',
   shortName: 'Auth Failures',
   description: 'Confirmation of user identity, authentication, and session management is critical. Weaknesses allow attackers to compromise passwords, keys, or session tokens.',
-  tagline: "When identity can't be trusted",
+  tagline: 'Когда личности нельзя доверять',
   icon: KeyRound,
   color: '#06B6D4',
   bgColor: 'rgba(6, 182, 212, 0.1)',
   difficulty: 'Medium',
   riskLevel: 'Critical',
   completionPercentage: 50,
+  secureByDesign: ['Prevent', 'Detect', 'Recover'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: Weak session management
@@ -229,19 +364,45 @@ app.post('/login', rateLimiter, async (req, res) => {
   },
   defenses: ['Implement multi-factor authentication (MFA)', 'Use secure session management', 'Implement account lockout after failed attempts', 'Use secure password policies', 'Protect against credential stuffing'],
   realWorldImpact: 'Credential stuffing attacks cost businesses billions annually. The 2020 Twitter hack used social engineering to bypass authentication.',
-  attackFlow: ['Attacker obtains credentials', 'Attempts credential stuffing', 'Bypasses weak auth', 'Hijacks user session']
+  attackFlow: ['Attacker obtains credentials', 'Attempts credential stuffing', 'Bypasses weak auth', 'Hijacks user session'],
+  lifecycleStage: 'Build',
+  attack: {
+    description: 'Confirmation of user identity, authentication, and session management is critical. Weaknesses allow attackers to compromise passwords, keys, or session tokens.',
+    flow: ['Attacker obtains credentials', 'Attempts credential stuffing', 'Bypasses weak auth', 'Hijacks user session'],
+    impact: 'Credential stuffing attacks cost businesses billions annually. The 2020 Twitter hack used social engineering to bypass authentication.'
+  },
+  defense: {
+    strategies: ['Implement multi-factor authentication (MFA)', 'Use secure session management', 'Implement account lockout after failed attempts', 'Use secure password policies', 'Protect against credential stuffing']
+  },
+  controlIds: ['session-hardening', 'rate-limit', 'secure-logging'],
+  codeLinks: [{
+    title: 'Session regeneration',
+    file: 'src/security/session.js',
+    snippet: `// Secure: Proper session management
+app.post('/login', rateLimiter, async (req, res) => {
+  if (await verifyPassword(req.body)) {
+    req.session.regenerate(() => {
+      req.session.userId = user.id;
+      req.session.cookie.maxAge = 3600000;
+      req.session.cookie.secure = true;
+      req.session.cookie.httpOnly = true;
+    });
+  }
+});`
+  }]
 }, {
   id: 'a08',
   name: 'Data Integrity Failures',
   shortName: 'Integrity Failures',
   description: 'Software and data integrity failures relate to code and infrastructure that does not protect against integrity violations, including insecure deserialization.',
-  tagline: "When data can't be trusted",
+  tagline: 'Когда данным нельзя доверять',
   icon: Database,
   color: '#14B8A6',
   bgColor: 'rgba(20, 184, 166, 0.1)',
   difficulty: 'Hard',
   riskLevel: 'High',
   completionPercentage: 20,
+  secureByDesign: ['Prevent', 'Detect', 'Recover'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: Insecure deserialization
@@ -262,19 +423,42 @@ app.post('/api/data', (req, res) => {
   },
   defenses: ['Use digital signatures for critical data', 'Verify integrity of software updates', 'Use secure CI/CD pipelines', 'Implement code signing', 'Review and audit third-party integrations'],
   realWorldImpact: 'The SolarWinds attack (2020) compromised software updates, affecting 18,000+ organizations including government agencies.',
-  attackFlow: ['Attacker compromises update pipeline', 'Injects malicious code', 'Victims install "trusted" update', 'Backdoor deployed']
+  attackFlow: ['Attacker compromises update pipeline', 'Injects malicious code', 'Victims install "trusted" update', 'Backdoor deployed'],
+  lifecycleStage: 'Build',
+  attack: {
+    description: 'Software and data integrity failures relate to code and infrastructure that does not protect against integrity violations, including insecure deserialization.',
+    flow: ['Attacker compromises update pipeline', 'Injects malicious code', 'Victims install "trusted" update', 'Backdoor deployed'],
+    impact: 'The SolarWinds attack (2020) compromised software updates, affecting 18,000+ organizations including government agencies.'
+  },
+  defense: {
+    strategies: ['Use digital signatures for critical data', 'Verify integrity of software updates', 'Use secure CI/CD pipelines', 'Implement code signing', 'Review and audit third-party integrations']
+  },
+  controlIds: ['integrity-checks', 'input-validation'],
+  codeLinks: [{
+    title: 'Validated deserialization',
+    file: 'src/security/deserialize.js',
+    snippet: `// Secure: Validated deserialization
+app.post('/api/data', (req, res) => {
+  const data = JSON.parse(req.body.serialized);
+  if (!validateSchema(data, expectedSchema)) {
+    return res.status(400).json({ error: 'Invalid data' });
+  }
+  processData(sanitize(data));
+});`
+  }]
 }, {
   id: 'a09',
   name: 'Security Logging Failures',
   shortName: 'Logging Failures',
   description: 'Without logging and monitoring, breaches cannot be detected. Insufficient logging, detection, monitoring, and active response allows attackers to persist.',
-  tagline: 'When attacks go unnoticed',
+  tagline: 'Когда атаки остаются незамеченными',
   icon: FileText,
   color: '#22C55E',
   bgColor: 'rgba(34, 197, 94, 0.1)',
   difficulty: 'Easy',
   riskLevel: 'Medium',
   completionPercentage: 40,
+  secureByDesign: ['Detect', 'Respond'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: No security logging
@@ -302,19 +486,45 @@ app.post('/login', (req, res) => {
   },
   defenses: ['Log all authentication and access control events', 'Ensure logs are tamper-proof', 'Implement real-time alerting', 'Create incident response procedures', 'Regular log review and analysis'],
   realWorldImpact: 'The average time to detect a breach is 287 days. Proper logging can reduce this to hours.',
-  attackFlow: ['Attacker probes system', 'No logging captures activity', 'Attack succeeds undetected', 'Breach persists for months']
+  attackFlow: ['Attacker probes system', 'No logging captures activity', 'Attack succeeds undetected', 'Breach persists for months'],
+  lifecycleStage: 'Monitor',
+  attack: {
+    description: 'Without logging and monitoring, breaches cannot be detected. Insufficient logging, detection, monitoring, and active response allows attackers to persist.',
+    flow: ['Attacker probes system', 'No logging captures activity', 'Attack succeeds undetected', 'Breach persists for months'],
+    impact: 'The average time to detect a breach is 287 days. Proper logging can reduce this to hours.'
+  },
+  defense: {
+    strategies: ['Log all authentication and access control events', 'Ensure logs are tamper-proof', 'Implement real-time alerting', 'Create incident response procedures', 'Regular log review and analysis']
+  },
+  controlIds: ['secure-logging'],
+  codeLinks: [{
+    title: 'Security logging',
+    file: 'src/security/logging.js',
+    snippet: `// Secure: Comprehensive logging
+app.post('/login', (req, res) => {
+  const result = authenticate(req.body);
+  securityLogger.log({
+    event: result ? 'LOGIN_SUCCESS' : 'LOGIN_FAILURE',
+    user: req.body.email,
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+    timestamp: new Date().toISOString()
+  });
+});`
+  }]
 }, {
   id: 'a10',
   name: 'Server-Side Request Forgery',
   shortName: 'SSRF',
   description: 'SSRF flaws occur when a web application fetches a remote resource without validating the user-supplied URL, allowing attackers to access internal services.',
-  tagline: 'When servers make bad requests',
+  tagline: 'Когда серверы делают плохие запросы',
   icon: Server,
   color: '#EC4899',
   bgColor: 'rgba(236, 72, 153, 0.1)',
   difficulty: 'Hard',
   riskLevel: 'High',
   completionPercentage: 15,
+  secureByDesign: ['Prevent', 'Detect'],
   isCompleted: false,
   examples: {
     vulnerable: `// Vulnerable: Unvalidated URL fetch
@@ -341,7 +551,35 @@ app.get('/fetch', async (req, res) => {
   },
   defenses: ['Validate and sanitize all user-supplied URLs', 'Use allowlists for permitted domains', 'Block requests to internal IP ranges', 'Disable unnecessary URL schemes (file://, gopher://)', 'Implement network segmentation'],
   realWorldImpact: 'The 2019 Capital One breach used SSRF to access AWS metadata and steal 100M customer records.',
-  attackFlow: ['Attacker identifies URL parameter', 'Crafts internal URL request', 'Server fetches internal resource', 'Sensitive data exposed']
+  attackFlow: ['Attacker identifies URL parameter', 'Crafts internal URL request', 'Server fetches internal resource', 'Sensitive data exposed'],
+  lifecycleStage: 'Build',
+  attack: {
+    description: 'SSRF flaws occur when a web application fetches a remote resource without validating the user-supplied URL, allowing attackers to access internal services.',
+    flow: ['Attacker identifies URL parameter', 'Crafts internal URL request', 'Server fetches internal resource', 'Sensitive data exposed'],
+    impact: 'The 2019 Capital One breach used SSRF to access AWS metadata and steal 100M customer records.'
+  },
+  defense: {
+    strategies: ['Validate and sanitize all user-supplied URLs', 'Use allowlists for permitted domains', 'Block requests to internal IP ranges', 'Disable unnecessary URL schemes (file://, gopher://)', 'Implement network segmentation']
+  },
+  controlIds: ['input-validation', 'network-segmentation'],
+  codeLinks: [{
+    title: 'URL allowlist',
+    file: 'src/security/ssrf.js',
+    snippet: `// Secure: URL validation and allowlist
+const ALLOWED_DOMAINS = ['api.trusted.com', 'cdn.trusted.com'];
+
+app.get('/fetch', async (req, res) => {
+  const url = new URL(req.query.url);
+  if (!ALLOWED_DOMAINS.includes(url.hostname)) {
+    return res.status(403).json({ error: 'Domain not allowed' });
+  }
+  if (url.hostname.match(/^(localhost|127\\.|10\\.|192\\.168\\.|172\\.(1[6-9]|2|3[01]))/)) {
+    return res.status(403).json({ error: 'Internal addresses blocked' });
+  }
+  const response = await fetch(url.toString());
+  res.json(await response.json());
+});`
+  }]
 }];
 export const achievements = [{
   id: 'explorer',
