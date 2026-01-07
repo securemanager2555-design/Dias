@@ -1,19 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon, BookOpenIcon, CodeIcon, PlayIcon, ShieldIcon, ActivityIcon, AlertTriangleIcon, CheckIcon, CopyIcon } from 'lucide-react';
-import type { OwaspModule } from '../data/owaspModules';
 import { AttackVisualization } from './AttackVisualization';
 import { SecurityDiagram } from './SecurityDiagram';
-type ModuleDetailProps = {
-  module: OwaspModule;
-  onClose: () => void;
-};
-type Tab = 'overview' | 'example' | 'sandbox' | 'defense' | 'visualization';
-const tabs: {
-  id: Tab;
-  label: string;
-  icon: typeof BookOpenIcon;
-}[] = [{
+const tabs = [{
   id: 'overview',
   label: 'Overview',
   icon: BookOpenIcon
@@ -37,13 +27,13 @@ const tabs: {
 export function ModuleDetail({
   module,
   onClose
-}: ModuleDetailProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
-  const [copied, setCopied] = useState<'vulnerable' | 'secure' | null>(null);
+}) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [copied, setCopied] = useState(null);
   const [sandboxInput, setSandboxInput] = useState('');
-  const [sandboxOutput, setSandboxOutput] = useState<string | null>(null);
+  const [sandboxOutput, setSandboxOutput] = useState(null);
   const Icon = module.icon;
-  const handleCopy = (code: string, type: 'vulnerable' | 'secure') => {
+  const handleCopy = (code, type) => {
     navigator.clipboard.writeText(code);
     setCopied(type);
     setTimeout(() => setCopied(null), 2000);

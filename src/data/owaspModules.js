@@ -1,36 +1,5 @@
 import { ShieldX, LockKeyhole, Code2, FileWarning, SlidersHorizontal, Package, KeyRound, Database, FileText, Server } from 'lucide-react';
-export type OwaspModule = {
-  id: string;
-  name: string;
-  shortName: string;
-  description: string;
-  tagline: string;
-  icon: typeof ShieldX;
-  color: string;
-  bgColor: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  riskLevel: 'Critical' | 'High' | 'Medium';
-  completionPercentage: number;
-  isCompleted: boolean;
-  examples: {
-    vulnerable: string;
-    secure: string;
-    explanation: string;
-  };
-  defenses: string[];
-  realWorldImpact: string;
-  attackFlow: string[];
-};
-export type Achievement = {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  isUnlocked: boolean;
-  requirement: number;
-  type: 'modules_viewed' | 'modules_completed' | 'streak';
-};
-export const owaspModules: OwaspModule[] = [{
+export const owaspModules = [{
   id: 'a01',
   name: 'Broken Access Control',
   shortName: 'Access Control',
@@ -374,7 +343,7 @@ app.get('/fetch', async (req, res) => {
   realWorldImpact: 'The 2019 Capital One breach used SSRF to access AWS metadata and steal 100M customer records.',
   attackFlow: ['Attacker identifies URL parameter', 'Crafts internal URL request', 'Server fetches internal resource', 'Sensitive data exposed']
 }];
-export const achievements: Achievement[] = [{
+export const achievements = [{
   id: 'explorer',
   name: 'Explorer',
   description: 'View 3 different security modules',
