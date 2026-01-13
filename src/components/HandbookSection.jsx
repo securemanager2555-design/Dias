@@ -29,7 +29,7 @@ export function HandbookSection({ module }) {
 
       <div>
         <h3 className="text-lg font-semibold text-white mb-3">
-          Attack Flow
+          Сценарий атаки
         </h3>
         <div className="flex flex-wrap gap-2">
           {module.attack.flow.map((step, i) => <motion.div key={i} className="flex items-center gap-2" initial={{

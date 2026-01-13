@@ -12,6 +12,8 @@ export function ModuleDetail({
   const [sandboxInput, setSandboxInput] = useState('');
   const [sandboxOutput, setSandboxOutput] = useState(null);
   const Icon = module.icon;
+  const difficultyLabel = module.difficulty === 'Easy' ? 'Лёгкий' : module.difficulty === 'Medium' ? 'Средний' : 'Сложный';
+  const riskLabel = module.riskLevel === 'Critical' ? 'Критический' : module.riskLevel === 'High' ? 'Высокий' : 'Средний';
   const handleCopy = (code, type) => {
     navigator.clipboard.writeText(code);
     setCopied(type);
@@ -20,13 +22,13 @@ export function ModuleDetail({
   const handleSandboxTest = () => {
     // Mock sandbox testing
     if (sandboxInput.toLowerCase().includes("' or") || sandboxInput.includes('--')) {
-      setSandboxOutput('⚠️ SQL Injection detected! Your input would bypass authentication.');
+      setSandboxOutput('⚠️ Обнаружен SQL Injection! Ввод обходит аутентификацию.');
     } else if (sandboxInput.includes('<script>')) {
-      setSandboxOutput('⚠️ XSS attempt detected! Script tags are blocked.');
+      setSandboxOutput('⚠️ Обнаружен XSS! Теги script заблокированы.');
     } else if (sandboxInput.length > 0) {
-      setSandboxOutput('✅ Input appears safe. No obvious attack patterns detected.');
+      setSandboxOutput('✅ Ввод выглядит безопасным. Опасные паттерны не найдены.');
     } else {
-      setSandboxOutput('Enter some input to test for vulnerabilities.');
+      setSandboxOutput('Введите данные для проверки уязвимостей.');
     }
   };
   return <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{
@@ -93,10 +95,10 @@ export function ModuleDetail({
                 backgroundColor: `${module.color}20`,
                 color: module.color
               }}>
-                  {module.difficulty}
+                  {difficultyLabel}
                 </span>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${module.riskLevel === 'Critical' ? 'bg-red-500/20 text-red-400' : module.riskLevel === 'High' ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                  {module.riskLevel} риск
+                  {riskLabel} риск
                 </span>
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-800/70 text-slate-300">
                   {module.lifecycleStage}
