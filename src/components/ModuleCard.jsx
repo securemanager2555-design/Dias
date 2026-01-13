@@ -36,6 +36,7 @@ export function ModuleCard({
     setIsHovered(false);
   };
   const Icon = module.icon;
+  const riskLabel = module.riskLevel === 'Critical' ? 'Критический' : module.riskLevel === 'High' ? 'Высокий' : 'Средний';
   return <motion.div className="perspective-1000 cursor-pointer" initial={{
     opacity: 0,
     y: 50
@@ -147,7 +148,7 @@ export function ModuleCard({
                   {module.difficulty === 'Easy' ? 'Лёгкий' : module.difficulty === 'Medium' ? 'Средний' : 'Сложный'}
                 </span>
                 <span className={`px-2 py-1 rounded-full ${module.riskLevel === 'Critical' ? 'bg-red-500/20 text-red-400' : module.riskLevel === 'High' ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                  {module.riskLevel} риск
+                  {riskLabel} риск
                 </span>
               </div>
             </motion.div>

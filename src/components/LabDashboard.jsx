@@ -60,7 +60,7 @@ export function LabDashboard({
                 <span className="gradient-text">Secure by Design</span>
               </h1>
               <p className="text-slate-400 text-sm">
-                OWASP Top 10 Defense Handbook
+                OWASP Top 10 — справочник защит
               </p>
             </div>
           </div>
@@ -94,7 +94,7 @@ export function LabDashboard({
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass">
               <ZapIcon className="w-4 h-4 text-cyan-400" />
               <span className="text-sm text-slate-300">
-                Демонстрация уязвимостей
+                Разбор уязвимостей
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl glass">

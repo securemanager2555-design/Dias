@@ -20,7 +20,7 @@ export function ImplementationSection({
         <div>
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-red-400 flex items-center gap-2">
-              <XIcon className="w-4 h-4" /> Vulnerable Code
+              <XIcon className="w-4 h-4" /> Уязвимый код
             </h4>
             <button onClick={() => handleCopy(module.examples.vulnerable, 'vulnerable')} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
               {copied === 'vulnerable' ? <CheckIcon className="w-3 h-3" /> : <CopyIcon className="w-3 h-3" />}
@@ -36,7 +36,7 @@ export function ImplementationSection({
         <div>
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-semibold text-green-400 flex items-center gap-2">
-              <CheckIcon className="w-4 h-4" /> Secure Code
+              <CheckIcon className="w-4 h-4" /> Безопасный код
             </h4>
             <button onClick={() => handleCopy(module.examples.secure, 'secure')} className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
               {copied === 'secure' ? <CheckIcon className="w-3 h-3" /> : <CopyIcon className="w-3 h-3" />}

@@ -27,7 +27,7 @@ export function ProfileCard() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Current Role
+              Текущая роль
             </p>
             <h3 className="text-lg font-semibold text-white">
               Профиль безопасности
@@ -54,7 +54,7 @@ export function ProfileCard() {
               </p>
             </div>
             <span className="text-[10px] uppercase tracking-widest text-slate-400">
-              switch
+              сменить
             </span>
           </div>
         </motion.button>
