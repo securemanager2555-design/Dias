@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MonitorIcon, ShieldIcon, ServerIcon, DatabaseIcon, LockIcon, AlertTriangleIcon } from 'lucide-react';
-const nodes = [{
+type DiagramNode = {
+  id: string;
+  label: string;
+  icon: typeof MonitorIcon;
+  x: number;
+  y: number;
+  color: string;
+  securityMeasures: string[];
+  vulnerabilities: string[];
+};
+const nodes: DiagramNode[] = [{
   id: 'client',
   label: 'Client',
   icon: MonitorIcon,
@@ -49,7 +59,7 @@ const connections = [{
   to: 'database'
 }];
 export function SecurityDiagram() {
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState<DiagramNode | null>(null);
   const [showAttackPath, setShowAttackPath] = useState(false);
   return <div className="relative w-full h-80 rounded-xl glass overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900/50 to-slate-800/50" />
@@ -57,11 +67,8 @@ export function SecurityDiagram() {
       {/* Connection lines */}
       <svg className="absolute inset-0 w-full h-full">
         {connections.map((conn, i) => {
-        const fromNode = nodes.find(n => n.id === conn.from);
-        const toNode = nodes.find(n => n.id === conn.to);
-        if (!fromNode || !toNode) {
-          return null;
-        }
+        const fromNode = nodes.find(n => n.id === conn.from)!;
+        const toNode = nodes.find(n => n.id === conn.to)!;
         return <motion.line key={i} x1={`${fromNode.x + 5}%`} y1={`${fromNode.y}%`} x2={`${toNode.x - 5}%`} y2={`${toNode.y}%`} stroke={showAttackPath ? '#EF4444' : '#4B5563'} strokeWidth="2" strokeDasharray={showAttackPath ? '8,4' : '0'} initial={{
           pathLength: 0
         }} animate={{
@@ -74,11 +81,8 @@ export function SecurityDiagram() {
 
         {/* Animated flow particles */}
         {showAttackPath && connections.map((conn, i) => {
-        const fromNode = nodes.find(n => n.id === conn.from);
-        const toNode = nodes.find(n => n.id === conn.to);
-        if (!fromNode || !toNode) {
-          return null;
-        }
+        const fromNode = nodes.find(n => n.id === conn.from)!;
+        const toNode = nodes.find(n => n.id === conn.to)!;
         return <motion.circle key={`particle-${i}`} r="4" fill="#EF4444" initial={{
           cx: `${fromNode.x + 5}%`,
           cy: `${fromNode.y}%`,

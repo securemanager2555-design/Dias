@@ -1,0 +1,122 @@
+.account-page {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem 4rem;
+  color: #e2e8f0;
+}
+
+.account-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.account-page__header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.account-page__header p {
+  margin: 0.35rem 0 0;
+  color: #94a3b8;
+}
+
+.account-page__back {
+  align-self: flex-start;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  background: rgba(6, 14, 28, 0.7);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.account-page__grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.account-page__panel {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.account-page__panel h2 {
+  margin: 0;
+}
+
+.account-page__panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #cbd5f5;
+  font-size: 0.9rem;
+}
+
+.account-page__panel input,
+.account-page__panel textarea {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  padding: 0.75rem;
+}
+
+.account-page__panel button {
+  align-self: flex-start;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.5), rgba(14, 165, 233, 0.3));
+  border: 1px solid rgba(45, 212, 191, 0.6);
+  color: #e0f2fe;
+  font-weight: 600;
+}
+
+.account-page__status {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.4);
+  color: #bae6fd;
+}
+
+.account-page__card {
+  max-width: 640px;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+}
+
+.account-page__card h1 {
+  margin: 0 0 0.5rem;
+}
+
+.account-page__card p {
+  margin: 0 0 1.5rem;
+  color: #94a3b8;
+}
+
+.account-page__card button {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 212, 191, 0.5);
+  background: rgba(6, 14, 28, 0.7);
+  color: #e2e8f0;
+}
+
+@media (min-width: 900px) {
+  .account-page__header {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .account-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

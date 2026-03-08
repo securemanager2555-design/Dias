@@ -1,0 +1,225 @@
+.notes-page {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem 4rem;
+  color: #e2e8f0;
+}
+
+.notes-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.notes-page__title {
+  font-size: 2rem;
+  margin: 0;
+}
+
+.notes-page__subtitle {
+  color: #94a3b8;
+  margin: 0.35rem 0 0;
+}
+
+.notes-page__back {
+  align-self: flex-start;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  background: rgba(6, 14, 28, 0.7);
+  color: #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.notes-page__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.notes-page__form {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notes-page__form h2 {
+  margin: 0;
+}
+
+.notes-page__form input,
+.notes-page__form textarea {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.notes-page__form button {
+  align-self: flex-start;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.5), rgba(14, 165, 233, 0.3));
+  border: 1px solid rgba(45, 212, 191, 0.6);
+  color: #e0f2fe;
+  font-weight: 600;
+}
+
+.notes-page__hint {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.notes-page__error {
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fecaca;
+}
+
+.notes-page__empty {
+  padding: 2rem;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.notes-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.notes-page__card {
+  border-radius: 1rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notes-page__cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.notes-page__cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.notes-page__meta {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.notes-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.notes-page__actions button {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.6);
+  color: #cbd5f5;
+  font-size: 0.75rem;
+}
+
+.notes-page__cardBody textarea {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  padding: 0.75rem;
+}
+
+.notes-page__comments {
+  border-top: 1px solid rgba(71, 85, 105, 0.4);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.notes-page__commentsHeader {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.notes-page__comment {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+}
+
+.notes-page__comment p {
+  margin: 0.4rem 0 0;
+  color: #e2e8f0;
+}
+
+.notes-page__comment span {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.notes-page__commentDelete {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: #fca5a5;
+}
+
+.notes-page__commentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notes-page__commentForm input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+  padding: 0.65rem;
+}
+
+.notes-page__commentForm button {
+  align-self: flex-start;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  color: #cbd5f5;
+}
+
+@media (min-width: 900px) {
+  .notes-page__header {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+
+  .notes-page__cardHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .notes-page__commentForm {
+    flex-direction: row;
+    align-items: center;
+  }
+}

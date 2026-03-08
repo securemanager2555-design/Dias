@@ -1,0 +1,70 @@
+.sbd-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sbd-timeline__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.sbd-timeline__subtitle {
+  color: #94a3b8;
+  margin: 0;
+}
+
+.sbd-timeline__list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sbd-timeline__item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+}
+
+.sbd-timeline__item--active {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.2);
+}
+
+.sbd-timeline__badge {
+  min-width: 72px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5f5;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sbd-timeline__itemTitle {
+  margin: 0;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.sbd-timeline__itemText {
+  margin: 0.25rem 0 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+@media (min-width: 768px) {
+  .sbd-timeline__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

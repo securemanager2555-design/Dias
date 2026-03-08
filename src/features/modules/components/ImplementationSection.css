@@ -1,0 +1,208 @@
+.implementation {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.implementation__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.implementation__codeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.implementation__codeTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.implementation__codeTitle--danger {
+  color: #f87171;
+}
+
+.implementation__codeTitle--success {
+  color: #4ade80;
+}
+
+.implementation__codeIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.implementation__codeBlock {
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.implementation__codeBlock--danger {
+  color: rgba(252, 165, 165, 0.8);
+}
+
+.implementation__codeBlock--success {
+  color: rgba(134, 239, 172, 0.8);
+}
+
+.copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  transition: color 0.2s ease;
+}
+
+.copy-button:hover {
+  color: #ffffff;
+}
+
+.copy-button__icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.copy-button--active {
+  color: #e2e8f0;
+}
+
+.implementation__panel {
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.implementation__panelTitle,
+.implementation__panelHeader {
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem;
+}
+
+.implementation__panelText {
+  font-size: 0.875rem;
+  color: #cbd5f5;
+  margin: 0;
+}
+
+.implementation__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.implementation__control {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  padding: 0.75rem;
+}
+
+.implementation__controlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.implementation__controlTitle {
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.implementation__controlText {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0.25rem 0 0;
+}
+
+.implementation__controlCode {
+  font-size: 0.75rem;
+  color: #d8b4fe;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.implementation__defenses {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.implementation__defenseCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+.implementation__defenseIndex {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.implementation__defenseIndexText {
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.implementation__defenseText {
+  color: #cbd5f5;
+  margin: 0;
+}
+
+.implementation__codeLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.implementation__codeLink {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.6);
+  padding: 0.75rem;
+}
+
+.implementation__codeLinkHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.implementation__codeLinkTitle {
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.implementation__codeLinkPath {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin: 0.25rem 0 0;
+}
+
+@media (min-width: 768px) {
+  .implementation__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

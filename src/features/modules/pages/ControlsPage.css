@@ -1,0 +1,67 @@
+.controls-page {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.controls-page__header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.controls-page__header p {
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+.controls-page__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.controls-page__card {
+  padding: 1.25rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.controls-page__cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.controls-page__badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.controls-page__card p {
+  margin: 0;
+  color: #94a3b8;
+}
+
+.controls-page__card code {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(71, 85, 105, 0.4);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  color: #d8b4fe;
+}
+
+@media (min-width: 768px) {
+  .controls-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

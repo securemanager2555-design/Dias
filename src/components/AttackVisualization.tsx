@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Component } from 'react';
 import { motion } from 'framer-motion';
+type AttackVisualizationProps = {
+  moduleId: string;
+  isPlaying?: boolean;
+};
 export function AttackVisualization({
   moduleId,
   isPlaying = true
-}) {
+}: AttackVisualizationProps) {
   const [step, setStep] = useState(0);
   useEffect(() => {
     if (!isPlaying) return;
@@ -12,7 +16,7 @@ export function AttackVisualization({
     }, 2000);
     return () => clearInterval(interval);
   }, [isPlaying]);
-  const visualizations = {
+  const visualizations: Record<string, React.ReactNode> = {
     a01: <AccessControlVisualization step={step} />,
     a02: <CryptoVisualization step={step} />,
     a03: <InjectionVisualization step={step} />,
@@ -38,6 +42,8 @@ export function AttackVisualization({
 }
 function InjectionVisualization({
   step
+}: {
+  step: number;
 }) {
   const steps = ['Attacker crafts payload', 'Malicious input sent', 'Query executed', 'Data exfiltrated'];
   return <div className="relative w-full h-full flex items-center justify-center p-8">
@@ -117,6 +123,8 @@ function InjectionVisualization({
 }
 function AccessControlVisualization({
   step
+}: {
+  step: number;
 }) {
   return <div className="relative w-full h-full flex items-center justify-center p-8">
       {/* User */}
@@ -166,6 +174,8 @@ function AccessControlVisualization({
 }
 function CryptoVisualization({
   step
+}: {
+  step: number;
 }) {
   return <div className="relative w-full h-full flex items-center justify-center">
       <motion.div className="relative" animate={{
@@ -199,6 +209,8 @@ function CryptoVisualization({
 }
 function SSRFVisualization({
   step
+}: {
+  step: number;
 }) {
   return <div className="relative w-full h-full flex items-center justify-between p-8">
       {/* External attacker */}
@@ -250,31 +262,43 @@ function SSRFVisualization({
 // Placeholder visualizations for other modules
 function InsecureDesignVisualization({
   step
+}: {
+  step: number;
 }) {
   return <DefaultVisualization step={step} icon="📐" label="Insecure Design" />;
 }
 function MisconfigVisualization({
   step
+}: {
+  step: number;
 }) {
   return <DefaultVisualization step={step} icon="⚙️" label="Misconfiguration" />;
 }
 function VulnerableComponentVisualization({
   step
+}: {
+  step: number;
 }) {
   return <DefaultVisualization step={step} icon="📦" label="Vulnerable Component" />;
 }
 function AuthFailureVisualization({
   step
+}: {
+  step: number;
 }) {
   return <DefaultVisualization step={step} icon="🔑" label="Auth Failure" />;
 }
 function IntegrityVisualization({
   step
+}: {
+  step: number;
 }) {
   return <DefaultVisualization step={step} icon="🗃️" label="Integrity Failure" />;
 }
 function LoggingVisualization({
   step
+}: {
+  step: number;
 }) {
   return <DefaultVisualization step={step} icon="📝" label="Logging Failure" />;
 }
@@ -282,6 +306,10 @@ function DefaultVisualization({
   step,
   icon = '🛡️',
   label = 'Security'
+}: {
+  step: number;
+  icon?: string;
+  label?: string;
 }) {
   return <div className="relative w-full h-full flex items-center justify-center">
       <motion.div animate={{

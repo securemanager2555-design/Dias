@@ -1,0 +1,86 @@
+const modules = [
+  {
+    slug: "a01",
+    title: "Нарушение контроля доступа",
+    description:
+      "Недостаточная проверка прав позволяет читать или изменять чужие данные.",
+    riskLevel: "Critical",
+    difficulty: "Medium",
+    lifecycleStage: "Design",
+  },
+  {
+    slug: "a02",
+    title: "Криптографические ошибки",
+    description:
+      "Неверное шифрование и хеширование приводит к утечке данных.",
+    riskLevel: "Critical",
+    difficulty: "Hard",
+    lifecycleStage: "Build",
+  },
+  {
+    slug: "a03",
+    title: "Инъекции",
+    description: "Вставка SQL/NoSQL/OS-команд через пользовательский ввод.",
+    riskLevel: "Critical",
+    difficulty: "Medium",
+    lifecycleStage: "Build",
+  },
+  {
+    slug: "a04",
+    title: "Небезопасный дизайн",
+    description: "Ошибки проектирования приводят к уязвимостям.",
+    riskLevel: "High",
+    difficulty: "Hard",
+    lifecycleStage: "Design",
+  },
+  {
+    slug: "a05",
+    title: "Ошибки конфигурации безопасности",
+    description: "Небезопасные настройки открывают доступ к системе.",
+    riskLevel: "High",
+    difficulty: "Medium",
+    lifecycleStage: "Build",
+  },
+  {
+    slug: "a06",
+    title: "Уязвимые и устаревшие компоненты",
+    description: "Старые библиотеки содержат известные уязвимости.",
+    riskLevel: "High",
+    difficulty: "Medium",
+    lifecycleStage: "Build",
+  },
+  {
+    slug: "a07",
+    title: "Сбои идентификации и аутентификации",
+    description: "Слабая аутентификация позволяет захватить аккаунт.",
+    riskLevel: "High",
+    difficulty: "Hard",
+    lifecycleStage: "Build",
+  },
+  {
+    slug: "a08",
+    title: "Нарушение целостности данных",
+    description: "Непроверенные данные могут быть подменены или испорчены.",
+    riskLevel: "High",
+    difficulty: "Hard",
+    lifecycleStage: "Build",
+  },
+  {
+    slug: "a09",
+    title: "Сбои логирования и мониторинга",
+    description: "Отсутствие логов мешает выявлять атаки и реагировать.",
+    riskLevel: "Medium",
+    difficulty: "Easy",
+    lifecycleStage: "Monitor",
+  },
+  {
+    slug: "a10",
+    title: "SSRF",
+    description: "Запросы к внутренним ресурсам через уязвимый сервер.",
+    riskLevel: "High",
+    difficulty: "Hard",
+    lifecycleStage: "Build",
+  },
+];
+
+module.exports = { modules };

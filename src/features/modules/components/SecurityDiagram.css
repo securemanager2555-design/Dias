@@ -1,0 +1,146 @@
+.security-diagram {
+  position: relative;
+  width: 100%;
+  height: 20rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.security-diagram__bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.5));
+}
+
+.security-diagram__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.security-diagram__node {
+  position: absolute;
+  cursor: pointer;
+}
+
+.security-diagram__nodeCard {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  transition: transform 0.2s ease;
+}
+
+.security-diagram__nodeCard--active {
+  box-shadow: 0 0 30px rgba(15, 23, 42, 0.8);
+}
+
+.security-diagram__nodeIcon {
+  width: 2rem;
+  height: 2rem;
+}
+
+.security-diagram__nodeLabel {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #cbd5f5;
+  font-weight: 500;
+  margin: 0.5rem 0 0;
+}
+
+.security-diagram__panel {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.security-diagram__panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.security-diagram__panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ffffff;
+  font-weight: 600;
+  margin: 0;
+}
+
+.security-diagram__panelIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.security-diagram__panelClose {
+  color: #94a3b8;
+}
+
+.security-diagram__panelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.security-diagram__panelSubtitle {
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 0.25rem;
+}
+
+.security-diagram__panelSubtitle--success {
+  color: #4ade80;
+}
+
+.security-diagram__panelSubtitle--danger {
+  color: #f87171;
+}
+
+.security-diagram__panelSubIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.security-diagram__panelList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.75rem;
+  color: #cbd5f5;
+}
+
+.security-diagram__toggle {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(51, 65, 85, 0.5);
+  color: #cbd5f5;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.security-diagram__toggle:hover {
+  background: rgba(51, 65, 85, 0.8);
+}
+
+.security-diagram__toggle--active {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.5);
+}

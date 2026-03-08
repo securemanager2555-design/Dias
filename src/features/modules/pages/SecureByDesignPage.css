@@ -1,0 +1,48 @@
+.sbd-page {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  padding: 0 1.5rem;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sbd-page__header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.sbd-page__header p {
+  color: #94a3b8;
+  margin-top: 0.5rem;
+}
+
+.sbd-page__select label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: #cbd5f5;
+  font-size: 0.85rem;
+}
+
+.sbd-page__select select {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  background: rgba(15, 23, 42, 0.8);
+  color: #ffffff;
+}
+
+.sbd-page__content {
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.sbd-page__content h2 {
+  margin: 0 0 0.5rem;
+}
+
+.sbd-page__content p {
+  color: #94a3b8;
+}

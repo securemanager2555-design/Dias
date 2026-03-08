@@ -1,10 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import type { Achievement } from '../data/owaspModules';
+type AchievementBadgeProps = {
+  achievement: Achievement;
+  size?: 'sm' | 'md' | 'lg';
+  showDetails?: boolean;
+  onUnlock?: () => void;
+};
 export function AchievementBadge({
   achievement,
   size = 'md',
   showDetails = false
-}) {
+}: AchievementBadgeProps) {
   const sizeClasses = {
     sm: 'w-10 h-10 text-lg',
     md: 'w-14 h-14 text-2xl',
@@ -61,6 +68,8 @@ export function AchievementBadge({
 }
 export function AchievementUnlockAnimation({
   achievement
+}: {
+  achievement: Achievement;
 }) {
   return <motion.div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none" initial={{
     opacity: 0
