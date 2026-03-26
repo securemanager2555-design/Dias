@@ -5,9 +5,10 @@ import {
   EyeOffIcon,
   LockIcon,
   MailIcon,
+  RefreshCwIcon,
   ShieldCheckIcon,
 } from 'lucide-react';
-import { loginUser, registerUser } from '../../../api/auth';
+import { loginUser, registerUser, resendLoginCode, verifyLoginCode } from '../../../api/auth';
 import './AuthPage.css';
 
 const strengthLabels = ['Слабый', 'Нормальный', 'Хороший', 'Сильный'];
@@ -28,6 +29,8 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
   const [signinEmail, setSigninEmail] = useState('');
   const [signinPassword, setSigninPassword] = useState('');
   const [mfaCode, setMfaCode] = useState('');
+  const [loginChallengeId, setLoginChallengeId] = useState('');
+  const [loginCodeHint, setLoginCodeHint] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirm, setSignupConfirm] = useState('');
@@ -48,22 +51,73 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
+  const resetSigninFlow = () => {
+    setSigninStep('credentials');
+    setMfaCode('');
+    setLoginChallengeId('');
+    setLoginCodeHint('');
+    setAuthError('');
+  };
+
   const handleSigninSubmit = async event => {
     event.preventDefault();
     setAuthError('');
-    if (signinStep !== 'credentials') {
-      setSigninStep('done');
-      return;
-    }
+
     try {
       setIsSubmitting(true);
-      const data = await loginUser(signinEmail, signinPassword);
+
+      if (signinStep === 'credentials') {
+        const data = await loginUser(signinEmail, signinPassword);
+        setLoginChallengeId(data.challengeId);
+        setSigninEmail(data.email || signinEmail);
+        setMfaCode('');
+        setSigninStep('mfa');
+        setLoginCodeHint(
+          data.demoCode
+            ? `Код для локальной разработки: ${data.demoCode}`
+            : 'Код подтверждения отправлен на вашу почту.'
+        );
+        return;
+      }
+
+      const data = await verifyLoginCode(loginChallengeId, mfaCode);
       if (onAuthSuccess) {
         onAuthSuccess(data.user);
       }
       setSigninStep('done');
     } catch (error) {
-      setAuthError('Не удалось войти. Проверь почту и пароль.');
+      if (signinStep === 'credentials') {
+        setAuthError('Не удалось начать вход. Проверьте почту и пароль.');
+      } else if (error?.message === 'invalid_login_code') {
+        const attemptsLeft = error?.payload?.attemptsLeft;
+        setAuthError(
+          typeof attemptsLeft === 'number'
+            ? `Неверный код. Осталось попыток: ${attemptsLeft}.`
+            : 'Неверный код подтверждения.'
+        );
+      } else if (error?.message === 'login_code_expired') {
+        setAuthError('Срок действия кода истек. Запросите новый код.');
+      } else {
+        setAuthError('Не удалось подтвердить код. Повторите попытку.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!loginChallengeId) return;
+    setAuthError('');
+    try {
+      setIsSubmitting(true);
+      const data = await resendLoginCode(loginChallengeId);
+      setLoginCodeHint(
+        data.demoCode
+          ? `Новый код для локальной разработки: ${data.demoCode}`
+          : 'Новый код подтверждения отправлен на вашу почту.'
+      );
+    } catch {
+      setAuthError('Не удалось отправить код повторно.');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,8 +138,8 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
       }
       setMode('signin');
       setSigninStep('done');
-    } catch (error) {
-      setAuthError('Не удалось зарегистрироваться. Проверь данные.');
+    } catch {
+      setAuthError('Не удалось создать аккаунт. Проверьте введенные данные.');
     } finally {
       setIsSubmitting(false);
     }
@@ -105,12 +159,12 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
             <div>
               <h1 className="auth-page__title">Secure Auth Center</h1>
               <p className="auth-page__subtitle">
-                Вход и регистрация с акцентом на безопасность.
+                Двухэтапный вход с подтверждением по почте перед доступом в профиль.
               </p>
             </div>
             <div className="auth-page__badge">
               <ShieldCheckIcon className="auth-page__badgeIcon" />
-              MFA Ready
+              Почта + код
             </div>
           </div>
 
@@ -121,7 +175,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
               }`}
               onClick={() => {
                 setMode('signin');
-                setSigninStep('credentials');
+                resetSigninFlow();
               }}
             >
               Вход
@@ -154,6 +208,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                         />
                       </div>
                     </label>
+
                     <label className="auth-form__field">
                       <span>Пароль</span>
                       <div className="auth-form__inputWrap">
@@ -162,7 +217,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                           type={showPassword ? 'text' : 'password'}
                           value={signinPassword}
                           onChange={e => setSigninPassword(e.target.value)}
-                          placeholder="••••••••"
+                          placeholder="........"
                           required
                         />
                         <button
@@ -174,8 +229,9 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                         </button>
                       </div>
                     </label>
+
                     <button className="auth-form__submit" type="submit">
-                      {isSubmitting ? '\u0412\u0445\u043E\u0434...' : '\u041F\u0440\u043E\u0434\u043E\u043B\u0436\u0438\u0442\u044C'}
+                      {isSubmitting ? 'Отправка кода...' : 'Продолжить'}
                     </button>
                   </>
                 )}
@@ -183,39 +239,62 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                 {signinStep === 'mfa' && (
                   <>
                     <div className="auth-form__mfa">
-                      <h3>Двухфакторная проверка</h3>
+                      <h3>Подтверждение входа</h3>
                       <p>
-                        Мы отправили код подтверждения. Введите 6 цифр для
-                        завершения входа.
+                        Мы отправили 6-значный код на <strong>{signinEmail}</strong>. Введите его,
+                        чтобы открыть свой профиль.
                       </p>
                       <input
                         type="text"
                         inputMode="numeric"
                         maxLength={6}
                         value={mfaCode}
-                        onChange={e => setMfaCode(e.target.value)}
+                        onChange={e => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                         placeholder="123456"
+                        required
                       />
+                      {loginCodeHint && <div className="auth-form__hint">{loginCodeHint}</div>}
                     </div>
-                    <button className="auth-form__submit" type="submit">
-                      Подтвердить вход
-                    </button>
+
+                    <div className="auth-form__actions">
+                      <button className="auth-form__submit" type="submit">
+                        {isSubmitting ? 'Проверка...' : 'Подтвердить вход'}
+                      </button>
+                      <button
+                        className="auth-form__secondary"
+                        type="button"
+                        onClick={handleResendCode}
+                        disabled={isSubmitting}
+                      >
+                        <RefreshCwIcon />
+                        Отправить код еще раз
+                      </button>
+                      <button
+                        className="auth-form__secondary"
+                        type="button"
+                        onClick={resetSigninFlow}
+                        disabled={isSubmitting}
+                      >
+                        Изменить почту или пароль
+                      </button>
+                    </div>
                   </>
                 )}
 
                 {signinStep === 'done' && (
                   <div className="auth-form__success">
                     <h3>Доступ разрешен</h3>
-                    <p>Сессия создана. Добро пожаловать!</p>
+                    <p>Сессия активна. Теперь можно перейти в защищенную часть сайта.</p>
                     <button
                       className="auth-form__submit"
                       type="button"
-                      onClick={() => navigate('/')}
+                      onClick={() => navigate('/account')}
                     >
-                      Перейти в лабораторию
+                      Открыть профиль
                     </button>
                   </div>
                 )}
+
                 {authError && <div className="auth-form__error">{authError}</div>}
               </form>
             ) : (
@@ -233,6 +312,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                     />
                   </div>
                 </label>
+
                 <label className="auth-form__field">
                   <span>Пароль</span>
                   <div className="auth-form__inputWrap">
@@ -266,6 +346,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                     <span>{strengthLabels[signupStrength]}</span>
                   </div>
                 </label>
+
                 <label className="auth-form__field">
                   <span>Повторите пароль</span>
                   <div className="auth-form__inputWrap">
@@ -274,32 +355,33 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                       type="password"
                       value={signupConfirm}
                       onChange={e => setSignupConfirm(e.target.value)}
-                      placeholder="••••••••"
+                      placeholder="........"
                       required
                     />
                   </div>
                 </label>
+
                 <button className="auth-form__submit" type="submit">
-                  {isSubmitting ? '\u0420\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044F...' : '\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0430\u043A\u043A\u0430\u0443\u043D\u0442'}
+                  {isSubmitting ? 'Создание аккаунта...' : 'Создать аккаунт'}
                 </button>
                 {authError && <div className="auth-form__error">{authError}</div>}
               </form>
             )}
 
             <div className="auth-page__security">
-              <h3>Почему это безопасно</h3>
+              <h3>Почему это безопаснее</h3>
               <ul>
-                <li>Пароли хешируются и никогда не хранятся в открытом виде.</li>
-                <li>MFA снижает риск кражи учетной записи.</li>
-                <li>Rate limiting блокирует перебор паролей.</li>
-                <li>Логирование фиксирует подозрительные попытки входа.</li>
+                <li>Сначала проверяется пароль, но профиль не откроется без кода из письма.</li>
+                <li>Каждый код живет ограниченное время и имеет лимит попыток ввода.</li>
+                <li>Повторная отправка генерирует новый код и делает старый недействительным.</li>
+                <li>Журнал безопасности фиксирует вход, отправку кода и ошибки подтверждения.</li>
               </ul>
             </div>
           </div>
         </div>
 
         <div className="auth-page__footer glass">
-          Secure by Design: вход как часть цепочки защиты.
+          Secure by Design: вход в профиль теперь требует пароль и одноразовый код из почты.
         </div>
       </div>
     </div>

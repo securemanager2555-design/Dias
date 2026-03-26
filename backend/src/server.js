@@ -6,17 +6,33 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { prisma } = require("./prisma");
 
+let nodemailer = null;
+try {
+  nodemailer = require("nodemailer");
+} catch {
+  nodemailer = null;
+}
+
 const app = express();
 const port = process.env.PORT || 4000;
-const jwtSecret = process.env.JWT_SECRET || "change_me";
+const jwtSecret = process.env.JWT_SECRET || "dias";
 const jwtIssuer = process.env.JWT_ISSUER || "owasp-lab";
 const jwtAudience = process.env.JWT_AUDIENCE || "owasp-lab-client";
 const accessTokenTtlMinutes = Number(process.env.ACCESS_TOKEN_TTL_MINUTES || 15);
 const refreshTokenTtlDays = Number(process.env.REFRESH_TOKEN_TTL_DAYS || 30);
+const loginCodeTtlMinutes = Number(process.env.LOGIN_CODE_TTL_MINUTES || 10);
 const isProduction = process.env.NODE_ENV === "production";
-const adminMfaSecret = process.env.ADMIN_MFA_SECRET || "";
+const adminMfaSecret = process.env.ADMIN_MFA_SECRET || "dias";
 const lockoutThreshold = Number(process.env.LOGIN_LOCKOUT_THRESHOLD || 5);
 const lockoutMinutes = Number(process.env.LOGIN_LOCKOUT_MINUTES || 15);
+const smtpService = (process.env.SMTP_SERVICE || "gmail").trim().toLowerCase();
+const smtpHost =
+  process.env.SMTP_HOST || (smtpService === "gmail" ? "smtp.gmail.com" : "");
+const smtpPort = Number(process.env.SMTP_PORT || (smtpService === "gmail" ? 465 : 587));
+const smtpSecure = String(process.env.SMTP_SECURE || (smtpService === "gmail" ? "true" : "false")).toLowerCase() === "true";
+const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER || "";
+const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || "";
+const smtpFrom = process.env.SMTP_FROM || smtpUser || "no-reply@secure-by-design.local";
 const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .split(",")
   .map(origin => origin.trim())
@@ -171,8 +187,10 @@ const setNoStore = res => {
 
 const passwordResetStore = new Map();
 const loginFailureStore = new Map();
+const pendingLoginStore = new Map();
 const securityAlertStore = new Map();
 let auditChainHead = "genesis";
+let emailTransporterPromise = null;
 
 const checkLoginLock = email => {
   const record = loginFailureStore.get(email);
@@ -203,6 +221,70 @@ const registerFailedLogin = email => {
 
 const clearFailedLogin = email => {
   loginFailureStore.delete(email);
+};
+
+const generateEmailCode = () =>
+  String(crypto.randomInt(0, 1000000)).padStart(6, "0");
+
+const getEmailTransporter = async () => {
+  if (!smtpHost || !smtpUser || !smtpPass || !nodemailer) {
+    return null;
+  }
+  if (!emailTransporterPromise) {
+    const transportConfig =
+      smtpService === "gmail"
+        ? {
+            service: "gmail",
+            auth: { user: smtpUser, pass: smtpPass },
+          }
+        : {
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpSecure,
+            auth: { user: smtpUser, pass: smtpPass },
+          };
+    emailTransporterPromise = Promise.resolve(
+      nodemailer.createTransport(transportConfig)
+    );
+  }
+  return emailTransporterPromise;
+};
+
+const sendLoginCodeEmail = async ({ email, code }) => {
+  const transporter = await getEmailTransporter();
+  if (!transporter) {
+    console.info(`[DEV] Login code for ${email}: ${code}`);
+    return false;
+  }
+  await transporter.sendMail({
+    from: smtpFrom,
+    to: email,
+    subject: "Код подтверждения входа в Secure by Design",
+    text: `Ваш код подтверждения: ${code}. Код действует ${loginCodeTtlMinutes} минут.`,
+    html: `<p>Ваш код подтверждения: <strong>${code}</strong>.</p><p>Код действует ${loginCodeTtlMinutes} минут.</p>`,
+  });
+  return true;
+};
+
+const createPendingLogin = async ({ user, email }) => {
+  const challengeId = crypto.randomUUID();
+  const code = generateEmailCode();
+  const codeHash = hashToken(code);
+  const expiresAt = Date.now() + loginCodeTtlMinutes * 60 * 1000;
+  pendingLoginStore.set(challengeId, {
+    userId: user.id,
+    email,
+    codeHash,
+    expiresAt,
+    attemptsLeft: 5,
+  });
+  const emailSent = await sendLoginCodeEmail({ email, code });
+  return {
+    challengeId,
+    expiresAt: new Date(expiresAt).toISOString(),
+    emailSent,
+    demoCode: !isProduction && !emailSent ? code : undefined,
+  };
 };
 
 const buildTotpCode = (secret, timestampMs) => {
@@ -447,6 +529,11 @@ setInterval(() => {
       loginFailureStore.delete(email);
     }
   }
+  for (const [challengeId, pending] of pendingLoginStore.entries()) {
+    if (pending.expiresAt <= now) {
+      pendingLoginStore.delete(challengeId);
+    }
+  }
 }, 60 * 1000).unref();
 
 const authLimiter = createRateLimiter({
@@ -544,11 +631,115 @@ app.post("/api/auth/login", authLimiter, loginLimiter, async (req, res, next) =>
     }
 
     clearFailedLogin(email);
+    const pendingLogin = await createPendingLogin({ user, email });
+    void writeAuditLog(req, "auth_login_code_sent", {
+      email,
+      challengeId: pendingLogin.challengeId,
+    });
+    setNoStore(res);
+    return res.status(202).json({
+      status: "code_required",
+      challengeId: pendingLogin.challengeId,
+      expiresAt: pendingLogin.expiresAt,
+      email,
+      emailSent: pendingLogin.emailSent,
+      demoCode: pendingLogin.demoCode,
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.post("/api/auth/login/verify", authLimiter, async (req, res, next) => {
+  try {
+    const challengeId =
+      typeof req.body?.challengeId === "string" ? req.body.challengeId.trim() : "";
+    const code = typeof req.body?.code === "string" ? req.body.code.trim() : "";
+    if (!challengeId || !/^\d{6}$/.test(code)) {
+      return res.status(400).json({ error: "invalid_verification_payload" });
+    }
+
+    const pending = pendingLoginStore.get(challengeId);
+    if (!pending || pending.expiresAt <= Date.now()) {
+      pendingLoginStore.delete(challengeId);
+      void writeAuditLog(req, "auth_login_code_expired", { challengeId });
+      return res.status(400).json({ error: "login_code_expired" });
+    }
+
+    if (pending.codeHash !== hashToken(code)) {
+      pending.attemptsLeft -= 1;
+      if (pending.attemptsLeft <= 0) {
+        pendingLoginStore.delete(challengeId);
+        void writeAuditLog(req, "auth_login_code_failed", {
+          challengeId,
+          email: pending.email,
+          reason: "attempts_exhausted",
+        });
+        return res.status(401).json({ error: "invalid_login_code" });
+      }
+      void writeAuditLog(req, "auth_login_code_failed", {
+        challengeId,
+        email: pending.email,
+        attemptsLeft: pending.attemptsLeft,
+      });
+      return res.status(401).json({
+        error: "invalid_login_code",
+        attemptsLeft: pending.attemptsLeft,
+      });
+    }
+
+    pendingLoginStore.delete(challengeId);
+    const user = await prisma.user.findUnique({ where: { id: pending.userId } });
+    if (!user) {
+      void writeAuditLog(req, "auth_login_code_failed", {
+        challengeId,
+        email: pending.email,
+        reason: "user_not_found",
+      });
+      return res.status(401).json({ error: "invalid_login_code" });
+    }
+
     const tokens = await issueTokens(user, req);
     req.auth = { sub: user.id, role: user.role };
-    void writeAuditLog(req, "auth_login_success", { email });
+    void writeAuditLog(req, "auth_login_success", { email: pending.email, challengeId });
     setNoStore(res);
     return res.json({ user: sanitizeUser(user), tokenType: "Bearer", ...tokens });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.post("/api/auth/login/resend", authLimiter, async (req, res, next) => {
+  try {
+    const challengeId =
+      typeof req.body?.challengeId === "string" ? req.body.challengeId.trim() : "";
+    if (!challengeId) {
+      return res.status(400).json({ error: "invalid_challenge_id" });
+    }
+    const pending = pendingLoginStore.get(challengeId);
+    if (!pending || pending.expiresAt <= Date.now()) {
+      pendingLoginStore.delete(challengeId);
+      return res.status(400).json({ error: "login_code_expired" });
+    }
+
+    const code = generateEmailCode();
+    pending.codeHash = hashToken(code);
+    pending.expiresAt = Date.now() + loginCodeTtlMinutes * 60 * 1000;
+    pending.attemptsLeft = 5;
+    const emailSent = await sendLoginCodeEmail({ email: pending.email, code });
+    void writeAuditLog(req, "auth_login_code_resent", {
+      email: pending.email,
+      challengeId,
+    });
+    setNoStore(res);
+    return res.json({
+      status: "code_resent",
+      challengeId,
+      expiresAt: new Date(pending.expiresAt).toISOString(),
+      email: pending.email,
+      emailSent,
+      demoCode: !isProduction && !emailSent ? code : undefined,
+    });
   } catch (error) {
     return next(error);
   }

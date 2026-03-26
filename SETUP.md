@@ -48,11 +48,30 @@ copy .env.example .env
 
 Если `copy` не сработает, создай `backend/.env` вручную по примеру `backend/.env.example`.
 
-Минимум проверь эти значения:
+**Обязательно** заполни эти значения:
 
-- `DATABASE_URL`
-- `JWT_SECRET` (длинный случайный секрет)
-- `CORS_ORIGIN=http://localhost:5173`
+### Основные (критичные):
+- `DATABASE_URL` - строка подключения к PostgreSQL
+- `JWT_SECRET` - длинный случайный секрет (минимум 32 символа)
+- `CORS_ORIGIN=http://localhost:5173` - для фронтенда
+
+### Email (для восстановления пароля и кодов входа):
+- для Gmail:
+  - `GMAIL_USER=yourgmail@gmail.com`
+  - `GMAIL_APP_PASSWORD=your_gmail_app_password` (не обычный пароль, а app password из 2FA)
+- или для другого SMTP-сервера:
+  - `SMTP_SERVICE`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+
+**⚠️ Без email конфигурации функции восстановления пароля не будут работать!**
+
+### Security (опционально):
+- `LOGIN_LOCKOUT_THRESHOLD=5` - сколько неудачных попыток до блокировки
+- `LOGIN_LOCKOUT_MINUTES=15` - на сколько минут блокировать
+- `LOGIN_CODE_TTL_MINUTES=10` - срок действия кода входа
+
+### Админ данные для seed:
+- `SEED_ADMIN_EMAIL=admin@example.com`
+- `SEED_ADMIN_PASSWORD=ChangeMe12345`
 
 ## 5) Подготовка БД
 

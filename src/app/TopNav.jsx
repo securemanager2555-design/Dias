@@ -1,9 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import './TopNav.css';
 
 export function TopNav({ route, onNavigate, user }) {
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-
   const authItem = user
     ? { label: '\u0410\u043a\u043a\u0430\u0443\u043d\u0442', path: '/account' }
     : { label: '\u0412\u0445\u043e\u0434', path: '/auth' };
@@ -19,21 +17,7 @@ export function TopNav({ route, onNavigate, user }) {
     { label: '\u0417\u0430\u043c\u0435\u0442\u043a\u0438', path: '/notes' },
   ];
 
-  const secondaryItems = [
-    ...(user
-      ? [{ label: '\u041a\u0430\u0440\u0442\u0430 \u0437\u0430\u0449\u0438\u0442\u044b', path: '/protection-map' }]
-      : []),
-    { label: 'Secure by Design', path: '/secure-by-design' },
-    { label: '\u041a\u043e\u043d\u0442\u0440\u043c\u0435\u0440\u044b', path: '/controls' },
-  ];
-
-  const isMoreActive = useMemo(
-    () => secondaryItems.some(item => item.path === route),
-    [route]
-  );
-
   const handleNavigate = path => {
-    setIsMoreOpen(false);
     onNavigate(path);
   };
 
@@ -52,30 +36,6 @@ export function TopNav({ route, onNavigate, user }) {
             {item.label}
           </button>
         ))}
-
-        <div className="top-nav__moreWrap">
-          <button
-            className={`top-nav__link ${isMoreActive || isMoreOpen ? 'top-nav__link--active' : ''}`}
-            onClick={() => setIsMoreOpen(prev => !prev)}
-          >
-            {'\u0415\u0449\u0451'}
-          </button>
-          {isMoreOpen && (
-            <div className="top-nav__moreMenu glass-strong">
-              {secondaryItems.map(item => (
-                <button
-                  key={item.path}
-                  className={`top-nav__moreItem ${
-                    route === item.path ? 'top-nav__moreItem--active' : ''
-                  }`}
-                  onClick={() => handleNavigate(item.path)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
       </nav>
     </header>
   );

@@ -10,12 +10,26 @@ export const registerUser = async (email, password) => {
 };
 
 export const loginUser = async (email, password) => {
-  const data = await apiFetch("/api/auth/login", {
+  return apiFetch("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
+};
+
+export const verifyLoginCode = async (challengeId, code) => {
+  const data = await apiFetch("/api/auth/login/verify", {
+    method: "POST",
+    body: JSON.stringify({ challengeId, code }),
+  });
   setTokens(data.accessToken, data.refreshToken);
   return data;
+};
+
+export const resendLoginCode = async challengeId => {
+  return apiFetch("/api/auth/login/resend", {
+    method: "POST",
+    body: JSON.stringify({ challengeId }),
+  });
 };
 
 export const refreshSession = async () => {
