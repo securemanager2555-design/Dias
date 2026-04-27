@@ -68,12 +68,14 @@ res.setHeader('X-Content-Type-Options', 'nosniff');`,
     name: 'Network Segmentation',
     description: 'Ограничение доступа к внутренним ресурсам и проверка URL снижают риск SSRF.',
     codeSnippet: `const parsed = new URL(trimmed);
-if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return null;`,
+if (parsed.protocol !== 'https:') return null;
+if (privateIpv4Pattern.test(hostname) || hostname.endsWith('.internal')) return null;`,
   },
   {
     id: 'integrity-checks',
     name: 'Integrity Checks',
-    description: 'Ограничение формата и размера входных данных помогает сохранять целостность обработки.',
-    codeSnippet: `app.use(express.json({ limit: '100kb' }));`,
+    description: 'Lockfile, npm ci и CI-аудит защищают целостность цепочки поставки.',
+    codeSnippet: `npm ci
+npm audit --omit=dev --audit-level=high`,
   },
 ];

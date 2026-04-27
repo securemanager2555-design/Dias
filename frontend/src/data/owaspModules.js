@@ -293,7 +293,7 @@ app.use('/admin', authenticate, authorize('admin'), adminRoutes);`
     "express": "^4.18.2"
   },
   "scripts": {
-    "audit": "npm audit --production"
+    "audit": "npm audit --omit=dev --audit-level=high"
   }
 }`,
     explanation: 'Регулярно обновляйте зависимости и используйте автоматические сканеры уязвимостей.'
@@ -322,7 +322,7 @@ app.use('/admin', authenticate, authorize('admin'), adminRoutes);`
     "express": "^4.18.2"
   },
   "scripts": {
-    "audit": "npm audit --production"
+    "audit": "npm audit --omit=dev --audit-level=high"
   }
 }`
   }]

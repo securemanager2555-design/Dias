@@ -11,15 +11,49 @@ import {
 import { loginUser, registerUser, resendLoginCode, verifyLoginCode } from '../../../api/auth';
 import './AuthPage.css';
 
+const passwordPolicyHint =
+  'От 10 до 30 символов, без пробелов, со строчной и заглавной буквой, цифрой и спецсимволом.';
+
+function validatePasswordPolicy(value) {
+  return (
+    typeof value === 'string' &&
+    value.length >= 10 &&
+    value.length <= 30 &&
+    !/\s/.test(value) &&
+    /[a-zа-яё]/.test(value) &&
+    /[A-ZА-ЯЁ]/.test(value) &&
+    /\d/.test(value) &&
+    /[^A-Za-zА-Яа-яЁё0-9\s]/.test(value)
+  );
+}
+
 const strengthLabels = ['Слабый', 'Нормальный', 'Хороший', 'Сильный'];
 
 function getPasswordStrength(value) {
-  let score = 0;
-  if (value.length >= 8) score += 1;
-  if (/[A-ZА-Я]/.test(value)) score += 1;
-  if (/[0-9]/.test(value)) score += 1;
-  if (/[^A-Za-zА-Яа-я0-9]/.test(value)) score += 1;
-  return Math.min(score, 3);
+  if (!value) {
+    return 0;
+  }
+
+  const hasLowercase = /[a-zа-яё]/.test(value);
+  const hasUppercase = /[A-ZА-ЯЁ]/.test(value);
+  const hasDigit = /\d/.test(value);
+  const hasSpecial = /[^A-Za-zА-Яа-яЁё0-9\s]/.test(value);
+  const hasNoSpaces = !/\s/.test(value);
+  const classCount = [hasLowercase, hasUppercase, hasDigit, hasSpecial].filter(Boolean).length;
+
+  if (validatePasswordPolicy(value)) {
+    return 3;
+  }
+
+  if (value.length >= 10 && hasNoSpaces && classCount >= 3) {
+    return 2;
+  }
+
+  if (value.length >= 8 && classCount >= 2) {
+    return 1;
+  }
+
+  return 0;
 }
 
 export function AuthPage({ onNavigate, onAuthSuccess }) {
@@ -126,6 +160,10 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
   const handleSignupSubmit = async event => {
     event.preventDefault();
     setAuthError('');
+    if (!validatePasswordPolicy(signupPassword)) {
+      setAuthError(passwordPolicyHint);
+      return;
+    }
     if (signupPassword !== signupConfirm) {
       setAuthError('Пароли не совпадают.');
       return;
@@ -345,6 +383,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                     </div>
                     <span>{strengthLabels[signupStrength]}</span>
                   </div>
+                  <div className="auth-form__hint">{passwordPolicyHint}</div>
                 </label>
 
                 <label className="auth-form__field">

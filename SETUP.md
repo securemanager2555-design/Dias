@@ -25,16 +25,17 @@ cd Dias
 
 ## 3) Установка зависимостей
 
-В корне (frontend):
+В `frontend`:
 
 ```bash
+cd frontend
 npm install
 ```
 
 В backend:
 
 ```bash
-cd backend
+cd ../backend
 npm install
 ```
 
@@ -109,9 +110,10 @@ curl http://localhost:4000/api/health
 
 ## 7) Запуск frontend
 
-В корне проекта (новый терминал):
+В `frontend` (новый терминал):
 
 ```bash
+cd frontend
 npm run dev
 ```
 

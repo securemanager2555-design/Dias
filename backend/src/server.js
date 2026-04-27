@@ -22,7 +22,7 @@ const accessTokenTtlMinutes = Number(process.env.ACCESS_TOKEN_TTL_MINUTES || 15)
 const refreshTokenTtlDays = Number(process.env.REFRESH_TOKEN_TTL_DAYS || 30);
 const loginCodeTtlMinutes = Number(process.env.LOGIN_CODE_TTL_MINUTES || 10);
 const isProduction = process.env.NODE_ENV === "production";
-const adminMfaSecret = process.env.ADMIN_MFA_SECRET || "dias";
+const adminMfaSecret = process.env.ADMIN_MFA_SECRET || "";
 const lockoutThreshold = Number(process.env.LOGIN_LOCKOUT_THRESHOLD || 5);
 const lockoutMinutes = Number(process.env.LOGIN_LOCKOUT_MINUTES || 15);
 const smtpService = (process.env.SMTP_SERVICE || "gmail").trim().toLowerCase();
@@ -389,8 +389,11 @@ const validatePasswordPolicy = value =>
   typeof value === "string" &&
   value.length >= 10 &&
   value.length <= 128 &&
-  /[a-z]/i.test(value) &&
-  /\d/.test(value);
+  !/\s/.test(value) &&
+  /[A-Za-zА-Яа-яЁё]/.test(value) &&
+  /[A-ZА-ЯЁ]/.test(value) &&
+  /\d/.test(value) &&
+  /[^A-Za-zА-Яа-яЁё0-9\s]/.test(value);
 
 const validatePasswordInput = value =>
   typeof value === "string" && value.length >= 8 && value.length <= 128;
@@ -405,10 +408,22 @@ const validateAvatarUrl = value => {
   }
   try {
     const parsed = new URL(trimmed);
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    const hostname = parsed.hostname.toLowerCase();
+    const privateIpv4Pattern =
+      /^(localhost|127\.|0\.0\.0\.0$|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[0-1])\.)/;
+
+    if (parsed.protocol !== "https:") {
       return null;
     }
-    return trimmed;
+    if (
+      privateIpv4Pattern.test(hostname) ||
+      hostname === "::1" ||
+      hostname.endsWith(".local") ||
+      hostname.endsWith(".internal")
+    ) {
+      return null;
+    }
+    return parsed.toString();
   } catch {
     return null;
   }
@@ -1709,13 +1724,13 @@ app.get("/api/security/owasp", authRequired, async (req, res, next) => {
       {
         id: "shield-C3",
         threatId: "C3",
-        status: "partial",
+        status: "implemented",
         threat: "Supply Chain атаки через зависимости",
         owasp2025: "A08:2025 - Software or Data Integrity Failures",
-        controlName: "Policy: pinned lockfile + CI audit",
-        protectsAgainst: "Снижает риск подмены пакетов, но требует CI-процедур вне runtime.",
+        controlName: "Pinned lockfile + CI dependency audit",
+        protectsAgainst: "Снижает риск подмены пакетов через воспроизводимую установку npm ci и блокировку high CVE в CI.",
         codeSnippet:
-          "// Требуется CI: npm ci + npm audit + проверка lockfile в pull request.",
+          "npm ci\nnpm audit --omit=dev --audit-level=high",
       },
       {
         id: "shield-C4",
@@ -1801,12 +1816,13 @@ app.get("/api/security/owasp", authRequired, async (req, res, next) => {
         {
           id: "A06",
           title: "Vulnerable and Outdated Components",
-          status: "partial",
+          status: "implemented",
           codeSnippet:
-            "// Dependencies are pinned via package-lock.json\n// TODO: run npm audit in CI on a schedule.",
+            "npm ci\nnpm audit --omit=dev --audit-level=high\n// .github/workflows/security.yml runs on push, PR and weekly schedule.",
           controls: [
             "зависимости фиксируются через package-lock",
-            "нужен регулярный процесс npm audit и обновлений",
+            "CI выполняет npm audit и блокирует high/critical уязвимости",
+            "установка зависимостей выполняется через npm ci по lockfile",
           ],
         },
         {
@@ -1824,11 +1840,12 @@ app.get("/api/security/owasp", authRequired, async (req, res, next) => {
         {
           id: "A08",
           title: "Software and Data Integrity Failures",
-          status: "partial",
+          status: "implemented",
           codeSnippet:
-            "// No runtime code loading from remote sources\napp.use(express.json({ limit: \"100kb\" }));\n// Integrity hardening is handled in CI/CD.",
+            "// No runtime code loading from remote sources\napp.use(express.json({ limit: \"100kb\" }));\n// CI uses npm ci + npm audit from package-lock.json.",
           controls: [
-            "целостность зависит от защищенного CI/CD и секретов",
+            "целостность поставки контролируется через lockfile и CI audit",
+            "секреты хранятся в environment variables, а не в коде",
             "в backend нет runtime-подгрузки кода",
           ],
         },
@@ -1846,12 +1863,12 @@ app.get("/api/security/owasp", authRequired, async (req, res, next) => {
         {
           id: "A10",
           title: "Server-Side Request Forgery (SSRF)",
-          status: "partial",
+          status: "implemented",
           codeSnippet:
-            "const parsed = new URL(trimmed);\nif (parsed.protocol !== \"https:\" && parsed.protocol !== \"http:\") {\n  return null;\n}",
+            "const parsed = new URL(trimmed);\nif (parsed.protocol !== \"https:\") return null;\nif (privateIpv4Pattern.test(hostname) || hostname.endsWith(\".internal\")) return null;",
           controls: [
-            "валидация avatar URL (только http/https)",
-            "в backend нет фичи запроса произвольных удаленных URL",
+            "avatar URL принимает только https и блокирует localhost/private/internal адреса",
+            "backend не выполняет server-side fetch по пользовательским URL",
           ],
         },
       ],

@@ -134,17 +134,17 @@ export const protectionMap = {
   a06: [
     {
       componentId: "storage",
-      status: "partial",
-      controls: ["Dependency monitoring"],
-      why: "Есть базовый контроль зависимостей, но нужен процесс в CI.",
-      evidence: "lockfile + запланированный audit pipeline.",
+      status: "protected",
+      controls: ["Dependency monitoring", "CI audit"],
+      why: "Зависимости устанавливаются воспроизводимо из lockfile и проверяются в CI.",
+      evidence: "package-lock.json + npm ci + npm audit --audit-level=high.",
     },
     {
       componentId: "api",
-      status: "partial",
-      controls: ["Pinned versions"],
-      why: "Фиксация версий снижает дрейф зависимостей.",
-      evidence: "package-lock.json.",
+      status: "protected",
+      controls: ["Pinned versions", "Audit gate"],
+      why: "CI блокирует сборку при high/critical уязвимостях зависимостей.",
+      evidence: ".github/workflows/security.yml.",
     },
   ],
   a07: [
@@ -166,17 +166,17 @@ export const protectionMap = {
   a08: [
     {
       componentId: "api",
-      status: "partial",
-      controls: ["Integrity checks (process)"],
-      why: "Часть защиты зависит от CI/CD и процессов сборки.",
-      evidence: "Runtime code loading отсутствует, но нужен CI control.",
+      status: "protected",
+      controls: ["Integrity checks", "No runtime code loading"],
+      why: "Backend не подгружает код во время выполнения, а сборка использует проверенный lockfile.",
+      evidence: "npm ci + package-lock.json + отсутствует runtime code loading.",
     },
     {
       componentId: "storage",
-      status: "partial",
-      controls: ["Artifact policy"],
-      why: "Требуется формальный pipeline подписи/проверки артефактов.",
-      evidence: "Запланировано для CI.",
+      status: "protected",
+      controls: ["Artifact policy", "Secret isolation"],
+      why: "Секреты вынесены в environment variables, а целостность зависимостей проверяется pipeline.",
+      evidence: ".github/workflows/security.yml + environment variables.",
     },
   ],
   a09: [

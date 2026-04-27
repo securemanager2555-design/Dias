@@ -39,7 +39,8 @@ export const securityControls = [
     id: 'dependency-monitoring',
     name: 'Dependency Monitoring',
     description: 'Контроль уязвимостей в зависимостях и регулярные апдейты.',
-    codeSnippet: `npm audit --production`
+    codeSnippet: `npm ci
+npm audit --omit=dev --audit-level=high`
   },
   {
     id: 'session-hardening',
@@ -57,6 +58,6 @@ export const securityControls = [
     id: 'integrity-checks',
     name: 'Integrity Checks',
     description: 'Проверка целостности обновлений и подписей.',
-    codeSnippet: `verifySignature(payload, signature)`
+    codeSnippet: `.github/workflows/security.yml`
   }
 ];
