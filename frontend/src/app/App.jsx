@@ -124,6 +124,7 @@ export function App() {
           <AnimatePresence>
             {selectedModule && (
               <ModuleDetail
+                key={selectedModule.id}
                 module={selectedModule}
                 onClose={() => setSelectedModuleId(null)}
               />

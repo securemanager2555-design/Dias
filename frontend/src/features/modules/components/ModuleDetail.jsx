@@ -43,6 +43,7 @@ export function ModuleDetail({ module, onClose }) {
 
       <motion.div
         className="module-detail__modal glass-strong"
+        onClick={event => event.stopPropagation()}
         initial={{ scale: 0.9, y: 50 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 50 }}
