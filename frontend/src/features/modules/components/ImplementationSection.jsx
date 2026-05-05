@@ -7,9 +7,14 @@ import { SecureByDesignTimeline } from './SecureByDesignTimeline';
 import './ImplementationSection.css';
 
 export function ImplementationSection({ module, copied, handleCopy }) {
-  const controls = module.controlIds
+  const examples = module.examples || {};
+  const defenseStrategies = module.defense?.strategies || [];
+  const codeLinks = module.codeLinks || [];
+  const controls = (module.controlIds || [])
     .map(id => securityControls.find(control => control.id === id))
     .filter(Boolean);
+  const vulnerableExample = examples.vulnerable || '// Пример уязвимого кода не указан для этого модуля.';
+  const secureExample = examples.secure || '// Пример безопасной реализации не указан для этого модуля.';
 
   return (
     <div className="implementation">
@@ -20,7 +25,7 @@ export function ImplementationSection({ module, copied, handleCopy }) {
               <XIcon className="implementation__codeIcon" /> Уязвимый код
             </h4>
             <button
-              onClick={() => handleCopy(module.examples.vulnerable, 'vulnerable')}
+              onClick={() => handleCopy(vulnerableExample, 'vulnerable')}
               className={`copy-button ${copied === 'vulnerable' ? 'copy-button--active' : ''}`}
             >
               {copied === 'vulnerable' ? (
@@ -32,7 +37,7 @@ export function ImplementationSection({ module, copied, handleCopy }) {
             </button>
           </div>
           <pre className="code-block implementation__codeBlock implementation__codeBlock--danger">
-            <code>{module.examples.vulnerable}</code>
+            <code>{vulnerableExample}</code>
           </pre>
         </div>
 
@@ -42,7 +47,7 @@ export function ImplementationSection({ module, copied, handleCopy }) {
               <CheckIcon className="implementation__codeIcon" /> Безопасный код
             </h4>
             <button
-              onClick={() => handleCopy(module.examples.secure, 'secure')}
+              onClick={() => handleCopy(secureExample, 'secure')}
               className={`copy-button ${copied === 'secure' ? 'copy-button--active' : ''}`}
             >
               {copied === 'secure' ? (
@@ -54,14 +59,16 @@ export function ImplementationSection({ module, copied, handleCopy }) {
             </button>
           </div>
           <pre className="code-block implementation__codeBlock implementation__codeBlock--success">
-            <code>{module.examples.secure}</code>
+            <code>{secureExample}</code>
           </pre>
         </div>
       </div>
 
       <div className="implementation__panel glass">
         <h4 className="implementation__panelTitle">Пояснение</h4>
-        <p className="implementation__panelText">{module.examples.explanation}</p>
+        <p className="implementation__panelText">
+          {examples.explanation || 'Пояснение для этого модуля пока не указано.'}
+        </p>
       </div>
 
       <div className="implementation__panel glass">
@@ -83,7 +90,7 @@ export function ImplementationSection({ module, copied, handleCopy }) {
 
       <div className="implementation__defenses">
         <h3 className="implementation__panelHeader">Стратегии защиты</h3>
-        {module.defense.strategies.map((defense, i) => (
+        {defenseStrategies.map((defense, i) => (
           <motion.div
             key={i}
             className="implementation__defenseCard glass"
@@ -102,7 +109,7 @@ export function ImplementationSection({ module, copied, handleCopy }) {
       <div className="implementation__panel glass">
         <h3 className="implementation__panelHeader">Связанные фрагменты</h3>
         <div className="implementation__codeLinks">
-          {module.codeLinks.map(link => (
+          {codeLinks.map(link => (
             <div key={link.title} className="implementation__codeLink">
               <div className="implementation__codeLinkHeader">
                 <div>
