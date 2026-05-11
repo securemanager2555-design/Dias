@@ -42,6 +42,8 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "http://localhost:5173")
   .map(origin => origin.trim())
   .filter(Boolean);
 
+app.set("trust proxy", "loopback");
+
 const isWeakJwtSecret = value => {
   if (typeof value !== "string" || value.length < 32) {
     return true;
