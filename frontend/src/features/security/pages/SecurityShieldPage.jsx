@@ -8,41 +8,6 @@ const statusLabels = {
   planned: "Запланировано",
 };
 
-const eventLabels = {
-  auth_missing_token: "Запрос без токена",
-  auth_invalid_token: "Неверный токен",
-  auth_register_success: "Успешная регистрация",
-  auth_login_rejected_format: "Отклонен формат логина",
-  auth_login_failed: "Неудачная попытка входа",
-  auth_login_code_sent: "Код входа отправлен",
-  auth_login_code_resent: "Код входа отправлен повторно",
-  auth_login_code_expired: "Код входа истек",
-  auth_login_code_failed: "Неверный код входа",
-  auth_login_code_resend_blocked: "Повторная отправка кода ограничена",
-  rate_limit_blocked: "Rate limit: запрос заблокирован",
-  security_alert: "Security alert",
-  admin_mfa_failed: "MFA проверка не пройдена",
-  request_blocked_csrf_origin: "CSRF: блок по Origin",
-  request_blocked_csrf_site: "CSRF: блок по Sec-Fetch-Site",
-  request_blocked_path_traversal: "Path traversal: запрос заблокирован",
-  request_blocked_insecure_transport: "TLS: insecure transport заблокирован",
-  password_reset_requested: "Запрос на сброс пароля",
-  password_reset_completed: "Пароль сброшен",
-  auth_login_success: "Успешный вход",
-  auth_refresh_failed: "Неудачное обновление сессии",
-  auth_refresh_success: "Сессия успешно обновлена",
-  auth_logout: "Выход из аккаунта",
-  profile_updated: "Обновлен профиль",
-  password_change_failed: "Неудачная смена пароля",
-  password_changed: "Пароль изменен",
-  admin_role_updated: "Изменена роль пользователя",
-  note_created: "Создана заметка",
-  note_updated: "Обновлена заметка",
-  note_deleted: "Удалена заметка",
-  comment_created: "Добавлен комментарий",
-  comment_deleted: "Удален комментарий",
-};
-
 export function SecurityShieldPage({ user, onNavigate }) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,9 +36,7 @@ export function SecurityShieldPage({ user, onNavigate }) {
         setError("Не удалось загрузить статус защиты OWASP.");
       })
       .finally(() => {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setIsLoading(false);
       });
 
     return () => {
@@ -127,7 +90,9 @@ export function SecurityShieldPage({ user, onNavigate }) {
         <>
           <div className="security-shield__stats">
             <article className="security-shield__stat glass">
-              <div className="security-shield__statValue">{data?.counters?.failedLogins24h || 0}</div>
+              <div className="security-shield__statValue">
+                {data?.counters?.failedLogins24h || 0}
+              </div>
               <div className="security-shield__statLabel">Неудачных входов (24ч)</div>
             </article>
             <article className="security-shield__stat glass">
@@ -156,19 +121,25 @@ export function SecurityShieldPage({ user, onNavigate }) {
             <div className="security-shield__filters glass">
               <div className="security-shield__filterGroup">
                 <button
-                  className={`security-shield__chip ${statusFilter === "all" ? "security-shield__chip--active" : ""}`}
+                  className={`security-shield__chip ${
+                    statusFilter === "all" ? "security-shield__chip--active" : ""
+                  }`}
                   onClick={() => setStatusFilter("all")}
                 >
                   Все
                 </button>
                 <button
-                  className={`security-shield__chip ${statusFilter === "implemented" ? "security-shield__chip--active" : ""}`}
+                  className={`security-shield__chip ${
+                    statusFilter === "implemented" ? "security-shield__chip--active" : ""
+                  }`}
                   onClick={() => setStatusFilter("implemented")}
                 >
                   Реализовано
                 </button>
                 <button
-                  className={`security-shield__chip ${statusFilter === "partial" ? "security-shield__chip--active" : ""}`}
+                  className={`security-shield__chip ${
+                    statusFilter === "partial" ? "security-shield__chip--active" : ""
+                  }`}
                   onClick={() => setStatusFilter("partial")}
                 >
                   Частично
@@ -191,7 +162,9 @@ export function SecurityShieldPage({ user, onNavigate }) {
                   </div>
                   <div className="security-shield__evidenceStatus">
                     <span
-                      className={`security-shield__badge security-shield__badge--${item.status || "implemented"}`}
+                      className={`security-shield__badge security-shield__badge--${
+                        item.status || "implemented"
+                      }`}
                     >
                       {statusLabels[item.status] || "Реализовано"}
                     </span>
@@ -256,25 +229,6 @@ export function SecurityShieldPage({ user, onNavigate }) {
                 ))}
               </div>
             ) : null}
-          </section>
-
-          <section className="security-shield__events glass">
-            <h2>Последние события безопасности</h2>
-            {(data?.recentSecurityEvents || []).length === 0 ? (
-              <div className="security-shield__empty">События не найдены.</div>
-            ) : (
-              <div className="security-shield__eventList">
-                {data.recentSecurityEvents.map(event => (
-                  <div key={event.id} className="security-shield__event">
-                    <strong>{eventLabels[event.action] || event.action}</strong>
-                    <span>{event.user?.email || "system"}</span>
-                    <span>{event.ip || "IP не определен"}</span>
-                    <span>{new Date(event.createdAt).toLocaleString()}</span>
-                    <span>{event.userAgent || "Устройство не определено"}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </section>
         </>
       )}
