@@ -14,6 +14,7 @@ import { NotesPage } from '../features/notes/pages/NotesPage';
 import { AdminPage } from '../features/admin/pages/AdminPage';
 import { AccountPage } from '../features/profile/pages/AccountPage';
 import { SecurityShieldPage } from '../features/security/pages/SecurityShieldPage';
+import { SecurityEventsPage } from '../features/security/pages/SecurityEventsPage';
 import { TopNav } from './TopNav';
 import './App.css';
 
@@ -155,9 +156,18 @@ export function App() {
             onAuthSuccess={currentUser => setUser(currentUser)}
           />
         ))}
+      {route === '/security-events' &&
+        (user ? (
+          <SecurityEventsPage user={user} onNavigate={navigate} />
+        ) : (
+          <AuthPage
+            onNavigate={navigate}
+            onAuthSuccess={currentUser => setUser(currentUser)}
+          />
+        ))}
 
       {!route.match(
-        /^\/(|protection-map|secure-by-design|controls|notes|admin|account|security)$/i
+        /^\/(|protection-map|secure-by-design|controls|notes|admin|account|security|security-events)$/i
       ) && (
         <div className="app-page">
           <h1 className="app-page__title">{"\u0421\u0442\u0440\u0430\u043d\u0438\u0446\u0430 \u043d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u0430"}</h1>

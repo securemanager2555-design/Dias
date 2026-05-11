@@ -142,6 +142,39 @@
   line-height: 1.45;
 }
 
+.lab-dashboard__metricList {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+}
+
+.lab-dashboard__metric {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.55rem;
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.lab-dashboard__metricIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: #22d3ee;
+}
+
+.lab-dashboard__metricValue {
+  color: #5eead4;
+  font-weight: 700;
+}
+
+.lab-dashboard__metricLabel {
+  color: #cbd5f5;
+  font-size: 0.78rem;
+}
+
 .lab-dashboard__statTitle {
   color: #e2e8f0;
   font-size: 0.9rem;

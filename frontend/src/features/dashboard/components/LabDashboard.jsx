@@ -86,13 +86,13 @@ export function LabDashboard({
       requiresAuth: true,
     },
     {
-      id: "blocked",
+      id: "events",
       icon: ZapIcon,
       value: user ? `${shieldData?.counters?.blockedRequests24h || 0}` : "—",
       title: "Блокировок за 24ч",
       description: "Срабатывания rate limit, CSRF и других блокирующих контролей.",
       actionLabel: "Открыть события Shield",
-      route: "/security",
+      route: "/security-events",
       requiresAuth: true,
     },
     {
@@ -106,6 +106,34 @@ export function LabDashboard({
       requiresAuth: true,
     },
   ];
+
+  const displaySummaryCards = summaryCards
+    .filter(card => card.id !== "failed")
+    .map(card =>
+      card.id === "events"
+        ? {
+            ...card,
+            value: user ? `${(shieldData?.recentSecurityEvents || []).length}` : "—",
+            title: "События безопасности",
+            description:
+              "Отдельный журнал входов, отправки кодов, rate limit и других защитных событий.",
+            actionLabel: "Открыть события",
+            route: "/security-events",
+            metrics: [
+              {
+                icon: ZapIcon,
+                label: "Блокировок за 24ч",
+                value: user ? `${shieldData?.counters?.blockedRequests24h || 0}` : "—",
+              },
+              {
+                icon: AlertTriangleIcon,
+                label: "Неудачных входов за 24ч",
+                value: user ? `${shieldData?.counters?.failedLogins24h || 0}` : "—",
+              },
+            ],
+          }
+        : card
+    );
 
   const handleCardAction = card => {
     if (card.requiresAuth && !user) {
@@ -185,7 +213,7 @@ export function LabDashboard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            {summaryCards.map(card => {
+            {displaySummaryCards.map(card => {
               const Icon = card.icon;
               const isLocked = card.requiresAuth && !user;
               return (
@@ -199,6 +227,20 @@ export function LabDashboard({
                     {isLocked ? <LockIcon className="lab-dashboard__lockIcon" /> : null}
                   </div>
                   <div className="lab-dashboard__statTitle">{card.title}</div>
+                  {card.metrics ? (
+                    <div className="lab-dashboard__metricList">
+                      {card.metrics.map(metric => {
+                        const MetricIcon = metric.icon;
+                        return (
+                          <div key={metric.label} className="lab-dashboard__metric">
+                            <MetricIcon className="lab-dashboard__metricIcon" />
+                            <span className="lab-dashboard__metricValue">{metric.value}</span>
+                            <span className="lab-dashboard__metricLabel">{metric.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                   <p className="lab-dashboard__statText">{card.description}</p>
                   <button
                     className="lab-dashboard__statAction"

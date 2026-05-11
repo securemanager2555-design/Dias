@@ -14,6 +14,7 @@ export function TopNav({ route, onNavigate, user }) {
   const primaryItems = [
     { label: '\u041b\u0430\u0431\u043e\u0440\u0430\u0442\u043e\u0440\u0438\u044f', path: '/' },
     { label: 'OWASP Shield', path: '/security' },
+    { label: '\u0421\u043e\u0431\u044b\u0442\u0438\u044f', path: '/security-events' },
     { label: '\u0417\u0430\u043c\u0435\u0442\u043a\u0438', path: '/notes' },
   ];
 
