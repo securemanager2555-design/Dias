@@ -21,6 +21,10 @@ const jwtAudience = process.env.JWT_AUDIENCE || "owasp-lab-client";
 const accessTokenTtlMinutes = Number(process.env.ACCESS_TOKEN_TTL_MINUTES || 15);
 const refreshTokenTtlDays = Number(process.env.REFRESH_TOKEN_TTL_DAYS || 30);
 const loginCodeTtlMinutes = Number(process.env.LOGIN_CODE_TTL_MINUTES || 10);
+const loginCodeResendCooldownSeconds = Number(
+  process.env.LOGIN_CODE_RESEND_COOLDOWN_SECONDS || 60
+);
+const loginCodeMaxResends = Number(process.env.LOGIN_CODE_MAX_RESENDS || 5);
 const isProduction = process.env.NODE_ENV === "production";
 const adminMfaSecret = process.env.ADMIN_MFA_SECRET || "";
 const lockoutThreshold = Number(process.env.LOGIN_LOCKOUT_THRESHOLD || 5);
@@ -271,17 +275,21 @@ const createPendingLogin = async ({ user, email }) => {
   const code = generateEmailCode();
   const codeHash = hashToken(code);
   const expiresAt = Date.now() + loginCodeTtlMinutes * 60 * 1000;
+  const resendAvailableAt = Date.now() + loginCodeResendCooldownSeconds * 1000;
   pendingLoginStore.set(challengeId, {
     userId: user.id,
     email,
     codeHash,
     expiresAt,
+    resendAvailableAt,
+    resendCount: 0,
     attemptsLeft: 5,
   });
   const emailSent = await sendLoginCodeEmail({ email, code });
   return {
     challengeId,
     expiresAt: new Date(expiresAt).toISOString(),
+    resendAvailableAt: new Date(resendAvailableAt).toISOString(),
     emailSent,
     demoCode: !isProduction && !emailSent ? code : undefined,
   };
@@ -656,6 +664,7 @@ app.post("/api/auth/login", authLimiter, loginLimiter, async (req, res, next) =>
       status: "code_required",
       challengeId: pendingLogin.challengeId,
       expiresAt: pendingLogin.expiresAt,
+      resendAvailableAt: pendingLogin.resendAvailableAt,
       email,
       emailSent: pendingLogin.emailSent,
       demoCode: pendingLogin.demoCode,
@@ -737,9 +746,39 @@ app.post("/api/auth/login/resend", authLimiter, async (req, res, next) => {
       return res.status(400).json({ error: "login_code_expired" });
     }
 
+    const now = Date.now();
+    if (pending.resendAvailableAt && pending.resendAvailableAt > now) {
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((pending.resendAvailableAt - now) / 1000)
+      );
+      res.setHeader("Retry-After", String(retryAfterSeconds));
+      void writeAuditLog(req, "auth_login_code_resend_blocked", {
+        email: pending.email,
+        challengeId,
+        retryAfterSeconds,
+      });
+      return res.status(429).json({
+        error: "login_code_resend_too_soon",
+        retryAfterSeconds,
+        resendAvailableAt: new Date(pending.resendAvailableAt).toISOString(),
+      });
+    }
+
+    if (pending.resendCount >= loginCodeMaxResends) {
+      void writeAuditLog(req, "auth_login_code_resend_blocked", {
+        email: pending.email,
+        challengeId,
+        reason: "max_resends_reached",
+      });
+      return res.status(429).json({ error: "login_code_resend_limit_reached" });
+    }
+
     const code = generateEmailCode();
     pending.codeHash = hashToken(code);
     pending.expiresAt = Date.now() + loginCodeTtlMinutes * 60 * 1000;
+    pending.resendAvailableAt = Date.now() + loginCodeResendCooldownSeconds * 1000;
+    pending.resendCount += 1;
     pending.attemptsLeft = 5;
     const emailSent = await sendLoginCodeEmail({ email: pending.email, code });
     void writeAuditLog(req, "auth_login_code_resent", {
@@ -751,6 +790,8 @@ app.post("/api/auth/login/resend", authLimiter, async (req, res, next) => {
       status: "code_resent",
       challengeId,
       expiresAt: new Date(pending.expiresAt).toISOString(),
+      resendAvailableAt: new Date(pending.resendAvailableAt).toISOString(),
+      resendsLeft: Math.max(0, loginCodeMaxResends - pending.resendCount),
       email: pending.email,
       emailSent,
       demoCode: !isProduction && !emailSent ? code : undefined,
@@ -894,6 +935,38 @@ app.get("/api/profile", authRequired, async (req, res, next) => {
       return res.status(404).json({ error: "not_found" });
     }
     return res.json({ user: sanitizeUser(user) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+app.get("/api/profile/security-events", authRequired, async (req, res, next) => {
+  try {
+    const events = await prisma.auditLog.findMany({
+      where: {
+        userId: req.auth.sub,
+        action: {
+          in: [
+            "auth_login_success",
+            "auth_refresh_success",
+            "auth_logout",
+            "password_changed",
+            "profile_updated",
+          ],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        action: true,
+        ip: true,
+        userAgent: true,
+        createdAt: true,
+      },
+    });
+    setNoStore(res);
+    return res.json({ events });
   } catch (error) {
     return next(error);
   }
@@ -1354,6 +1427,7 @@ app.get("/api/security/owasp", authRequired, async (req, res, next) => {
           action: {
             in: [
               "auth_login_rejected_format",
+              "auth_login_code_resend_blocked",
               "auth_refresh_failed",
               "rate_limit_blocked",
               "request_blocked_csrf_origin",
@@ -1375,6 +1449,7 @@ app.get("/api/security/owasp", authRequired, async (req, res, next) => {
           createdAt: true,
           user: { select: { email: true } },
           ip: true,
+          userAgent: true,
         },
       }),
     ]);

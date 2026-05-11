@@ -14,6 +14,7 @@ const eventLabels = {
   auth_register_success: "Успешная регистрация",
   auth_login_rejected_format: "Отклонен формат логина",
   auth_login_failed: "Неудачная попытка входа",
+  auth_login_code_resend_blocked: "Повторная отправка кода ограничена",
   rate_limit_blocked: "Rate limit: запрос заблокирован",
   security_alert: "Security alert",
   admin_mfa_failed: "MFA проверка не пройдена",
@@ -263,7 +264,9 @@ export function SecurityShieldPage({ user, onNavigate }) {
                   <div key={event.id} className="security-shield__event">
                     <strong>{eventLabels[event.action] || event.action}</strong>
                     <span>{event.user?.email || "system"}</span>
+                    <span>{event.ip || "IP не определен"}</span>
                     <span>{new Date(event.createdAt).toLocaleString()}</span>
+                    <span>{event.userAgent || "Устройство не определено"}</span>
                   </div>
                 ))}
               </div>

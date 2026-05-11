@@ -5,6 +5,11 @@ export const fetchProfile = async () => {
   return data.user;
 };
 
+export const fetchSecurityEvents = async () => {
+  const data = await apiFetch("/api/profile/security-events", { auth: true });
+  return data.events || [];
+};
+
 export const updateProfile = async payload => {
   const data = await apiFetch("/api/profile", {
     method: "PUT",

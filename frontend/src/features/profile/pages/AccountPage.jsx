@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { changePassword, fetchProfile, updateProfile } from "../../../api/profile";
+import {
+  changePassword,
+  fetchProfile,
+  fetchSecurityEvents,
+  updateProfile,
+} from "../../../api/profile";
 import "./AccountPage.css";
+
+const securityEventLabels = {
+  auth_login_success: "Успешный вход",
+  auth_refresh_success: "Обновление сессии",
+  auth_logout: "Выход из аккаунта",
+  password_changed: "Смена пароля",
+  profile_updated: "Обновление профиля",
+};
 
 export function AccountPage({ user, onNavigate, onProfileUpdate }) {
   const [profile, setProfile] = useState(user || null);
@@ -11,17 +24,22 @@ export function AccountPage({ user, onNavigate, onProfileUpdate }) {
   const [newPassword, setNewPassword] = useState("");
   const [profileStatus, setProfileStatus] = useState("");
   const [passwordStatus, setPasswordStatus] = useState("");
+  const [securityEvents, setSecurityEvents] = useState([]);
+  const [securityEventsStatus, setSecurityEventsStatus] = useState("");
 
   useEffect(() => {
-    fetchProfile()
-      .then(data => {
+    Promise.all([fetchProfile(), fetchSecurityEvents().catch(() => [])])
+      .then(([data, events]) => {
         setProfile(data);
         setDisplayName(data.displayName || "");
         setAvatarUrl(data.avatarUrl || "");
         setBio(data.bio || "");
+        setSecurityEvents(events);
+        setSecurityEventsStatus("");
       })
       .catch(() => {
         setProfile(null);
+        setSecurityEventsStatus("Не удалось загрузить историю безопасности.");
       });
   }, []);
 
@@ -35,6 +53,7 @@ export function AccountPage({ user, onNavigate, onProfileUpdate }) {
         onProfileUpdate(updated);
       }
       setProfileStatus("Профиль обновлен.");
+      setSecurityEvents(await fetchSecurityEvents().catch(() => securityEvents));
     } catch {
       setProfileStatus("Не удалось сохранить профиль.");
     }
@@ -48,6 +67,7 @@ export function AccountPage({ user, onNavigate, onProfileUpdate }) {
       setCurrentPassword("");
       setNewPassword("");
       setPasswordStatus("Пароль обновлен.");
+      setSecurityEvents(await fetchSecurityEvents().catch(() => securityEvents));
     } catch {
       setPasswordStatus("Не удалось обновить пароль.");
     }
@@ -139,6 +159,40 @@ export function AccountPage({ user, onNavigate, onProfileUpdate }) {
           )}
         </form>
       </div>
+
+      <section className="account-page__panel account-page__securityHistory glass">
+        <div className="account-page__sectionHead">
+          <div>
+            <h2>История входов и действий</h2>
+            <p>Последние события аккаунта с временем, IP-адресом и устройством.</p>
+          </div>
+        </div>
+        {securityEventsStatus && (
+          <div className="account-page__status">{securityEventsStatus}</div>
+        )}
+        {securityEvents.length === 0 ? (
+          <div className="account-page__empty">События пока не найдены.</div>
+        ) : (
+          <div className="account-page__eventList">
+            {securityEvents.map(event => (
+              <article key={event.id} className="account-page__event">
+                <div>
+                  <strong>{securityEventLabels[event.action] || event.action}</strong>
+                  <span>{new Date(event.createdAt).toLocaleString()}</span>
+                </div>
+                <div>
+                  <span>IP</span>
+                  <b>{event.ip || "не определен"}</b>
+                </div>
+                <div>
+                  <span>Устройство</span>
+                  <b>{event.userAgent || "не определено"}</b>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeftIcon,
   EyeIcon,
@@ -65,6 +65,8 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
   const [mfaCode, setMfaCode] = useState('');
   const [loginChallengeId, setLoginChallengeId] = useState('');
   const [loginCodeHint, setLoginCodeHint] = useState('');
+  const [resendAvailableAt, setResendAvailableAt] = useState('');
+  const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirm, setSignupConfirm] = useState('');
@@ -75,6 +77,23 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
     () => getPasswordStrength(signupPassword),
     [signupPassword]
   );
+
+  useEffect(() => {
+    if (!resendAvailableAt) {
+      setResendSecondsLeft(0);
+      return undefined;
+    }
+
+    const updateCountdown = () => {
+      setResendSecondsLeft(
+        Math.max(0, Math.ceil((new Date(resendAvailableAt).getTime() - Date.now()) / 1000))
+      );
+    };
+
+    updateCountdown();
+    const timerId = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timerId);
+  }, [resendAvailableAt]);
 
   const navigate = path => {
     if (onNavigate) {
@@ -90,6 +109,8 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
     setMfaCode('');
     setLoginChallengeId('');
     setLoginCodeHint('');
+    setResendAvailableAt('');
+    setResendSecondsLeft(0);
     setAuthError('');
   };
 
@@ -103,6 +124,7 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
       if (signinStep === 'credentials') {
         const data = await loginUser(signinEmail, signinPassword);
         setLoginChallengeId(data.challengeId);
+        setResendAvailableAt(data.resendAvailableAt || '');
         setSigninEmail(data.email || signinEmail);
         setMfaCode('');
         setSigninStep('mfa');
@@ -145,13 +167,28 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
     try {
       setIsSubmitting(true);
       const data = await resendLoginCode(loginChallengeId);
+      setResendAvailableAt(data.resendAvailableAt || '');
       setLoginCodeHint(
         data.demoCode
           ? `Новый код для локальной разработки: ${data.demoCode}`
           : 'Новый код подтверждения отправлен на вашу почту.'
       );
-    } catch {
-      setAuthError('Не удалось отправить код повторно.');
+    } catch (error) {
+      if (error?.message === 'login_code_resend_too_soon') {
+        const retryAfter = error?.payload?.retryAfterSeconds;
+        if (error?.payload?.resendAvailableAt) {
+          setResendAvailableAt(error.payload.resendAvailableAt);
+        }
+        setAuthError(
+          typeof retryAfter === 'number'
+            ? `Повторно отправить код можно через ${retryAfter} с.`
+            : 'Повторная отправка кода временно ограничена.'
+        );
+      } else if (error?.message === 'login_code_resend_limit_reached') {
+        setAuthError('Лимит повторных отправок исчерпан. Повторите вход сначала.');
+      } else {
+        setAuthError('Не удалось отправить код повторно.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -302,10 +339,12 @@ export function AuthPage({ onNavigate, onAuthSuccess }) {
                         className="auth-form__secondary"
                         type="button"
                         onClick={handleResendCode}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || resendSecondsLeft > 0}
                       >
                         <RefreshCwIcon />
-                        Отправить код еще раз
+                        {resendSecondsLeft > 0
+                          ? `Повторно через ${resendSecondsLeft} с`
+                          : 'Отправить код еще раз'}
                       </button>
                       <button
                         className="auth-form__secondary"

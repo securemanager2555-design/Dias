@@ -285,10 +285,14 @@
 
 .security-shield__event {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(120px, 0.8fr) minmax(100px, 0.7fr) minmax(140px, 0.8fr) minmax(220px, 1.4fr);
   gap: 0.6rem;
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   padding-bottom: 0.4rem;
+}
+
+.security-shield__event span {
+  overflow-wrap: anywhere;
 }
 
 .security-shield__empty {
